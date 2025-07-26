@@ -1,0 +1,39 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "REST api for ecom",
+  "type": "module",
+  "main": "dist/server.js",
+  "scripts": {
+    "lint": "echo 'Linting not set up yet'",
+    "test": "echo 'Tests not set up yet'",
+    "start": "dist/server.js",
+    "dev:node": "nodemon dist/server.js",
+    "dev:ts": "tsc --watch",
+    "build": "tsc"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.12.4",
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "compression": "^1.8.1",
+    "dotenv": "^17.2.1",
+    "express": "^5.1.0",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "morgan": "^1.10.1",
+    "zod": "^4.0.10"
+  },
+  "devDependencies": {
+    "@types/compression": "^1.8.1",
+    "@types/dotenv": "^8.2.3",
+    "@types/express": "^5.0.3",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/morgan": "^1.9.10",
+    "@types/node": "^24.1.0",
+    "nodemon": "^3.1.10",
+    "typescript": "^5.8.3"
+  }
+}
