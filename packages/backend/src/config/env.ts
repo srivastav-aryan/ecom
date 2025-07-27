@@ -1,7 +1,7 @@
 import dotenv from "dotenv";
 import { z } from "zod";
 
-dotenv.config();
+dotenv.config({ quiet: true });
 
 const processEnvSchema = z.object({
   PORT: z.coerce.number().default(5001),

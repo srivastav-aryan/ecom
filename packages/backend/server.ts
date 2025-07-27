@@ -8,6 +8,10 @@ const startServer = (): void => {
     const server = app.listen(env.PORT, () => {
       console.log(`server started and listening on port: ${env.PORT}`);
       console.log(`ENVIORNMNET:- ${env.NODE_ENV}`);
+
+      if (env.NODE_ENV == "development") {
+        console.log(`Health check:- http://localhost:${env.PORT}/health`);
+      }
     });
 
     const startGracefullShutdown = (signal: string): void => {
@@ -26,7 +30,7 @@ const startServer = (): void => {
         process.exit(1);
       }, 30000);
     };
-
+    
     process.on("SIGTERM", () => startGracefullShutdown("SIGTERM"));
     process.on("SIGINT", () => startGracefullShutdown("SIGINT"));
   } catch (error) {
