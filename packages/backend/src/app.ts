@@ -36,7 +36,7 @@ export const createApp = (): express.Application => {
   //setting up the  middlewares
   setupMiddleWares(app);
 
-  app.get("/help", (req: Request, res: Response) => {
+  app.get("/health", (req: Request, res: Response) => {
     res.json({
       status: "OK",
       timeStamp: new Date().toISOString(),
