@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 import { z } from "zod";
 dotenv.config();
 const processEnvSchema = z.object({
-    PORT: z.coerce.number().default(5000),
+    PORT: z.coerce.number().default(5001),
     NODE_ENV: z
         .enum(["development", "production", "testing"])
         .default("development"),
