@@ -1,9 +1,8 @@
-import express from "express";
+import express, { Request, Response } from "express";
 import helmet from "helmet";
 import { env } from "./config/env.js";
 import compression from "compression";
 import morgan from "morgan";
-
 
 const setupMiddleWares = (app: express.Application): void => {
   app.use(
@@ -35,7 +34,15 @@ export const createApp = (): express.Application => {
   const app = express();
 
   //setting up the  middlewares
-  setupMiddleWares(app)
+  setupMiddleWares(app);
+
+  app.get("/help", (req: Request, res: Response) => {
+    res.json({
+      status: "OK",
+      timeStamp: new Date().toISOString(),
+      environment: env.NODE_ENV,
+    });
+  });
 
   return app;
 };

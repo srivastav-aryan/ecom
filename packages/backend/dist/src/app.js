@@ -22,5 +22,12 @@ export const createApp = () => {
     const app = express();
     //setting up the  middlewares
     setupMiddleWares(app);
+    app.get("/help", (req, res) => {
+        res.json({
+            status: "OK",
+            timeStamp: new Date().toISOString(),
+            environment: env.NODE_ENV,
+        });
+    });
     return app;
 };
