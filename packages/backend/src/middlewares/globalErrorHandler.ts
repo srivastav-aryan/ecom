@@ -1,19 +1,8 @@
 import { NextFunction, Request, Response } from "express";
-import { success, ZodError } from "zod";
+import { ZodError } from "zod";
+import { ApiError } from "../utilities/utilites.js";
 
-// coustom Api endpoint error creator
-export class ApiError extends Error {
-  constructor(
-    public statusCode: number,
-    message: string,
-    public isOperational = true
-  ) {
-    super(message);
-    this.name = "ApiError";
 
-    //Add stack tracing here, later
-  }
-}
 
 // globall error handler
 const globalErrorHandler = (

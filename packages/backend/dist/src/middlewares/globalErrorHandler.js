@@ -1,16 +1,5 @@
 import { ZodError } from "zod";
-// coustom Api endpoint error creator
-export class ApiError extends Error {
-    statusCode;
-    isOperational;
-    constructor(statusCode, message, isOperational = true) {
-        super(message);
-        this.statusCode = statusCode;
-        this.isOperational = isOperational;
-        this.name = "ApiError";
-        //Add stack tracing here, later
-    }
-}
+import { ApiError } from "../utilities/utilites.js";
 // globall error handler
 const globalErrorHandler = (err, req, res, next) => {
     // some code error programing error
