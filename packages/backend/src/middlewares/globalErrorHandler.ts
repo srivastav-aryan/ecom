@@ -1,8 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { ZodError } from "zod";
 import { ApiError } from "../utilities/utilites.js";
-
-
+import { env } from "../config/env.js";
 
 // globall error handler
 const globalErrorHandler = (
@@ -14,24 +13,30 @@ const globalErrorHandler = (
   // some code error programing error
   let statusCode = 500;
   let message = "Generic internal server error";
-  let errors: string[] | undefined;  //zodError (if using safeParse) or some other have errors as property 
+  // let errors: string[] | undefined; 
 
-  // for user errors
   if (err instanceof ApiError) {
-    statusCode = 400;
+    // for user errors
+    statusCode = err.statusCode;
     message = err.message;
-    //stack trace logic will come here
   } else if (err instanceof ZodError) {
     //for zodError
-    statusCode = 400
-    message = err.message
-    errors = err.issues.map((issue) => `${issue.path.join('.')}: ${issue.message}`)
+    statusCode = 400;
+    message = err.message;
   }
-  // add more type of errors later 
+  // add more type of errors later
 
+  // log for debuging
+  console.error(
+    `error occured with statusCode:- ${statusCode} and message:-${message}`
+  );
+  if (env.NODE_ENV == "development") {
+    console.error(`the stacktrace:- ${err.stack}`);
+  }
 
   res.status(statusCode).json({
     success: false,
-    message
-  })
+    message,
+    ...(env.NODE_ENV === 'development' ? {stack: err.stack} : {} )
+  });
 };

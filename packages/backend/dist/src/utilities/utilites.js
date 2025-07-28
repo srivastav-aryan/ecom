@@ -7,6 +7,7 @@ export class ApiError extends Error {
         this.statusCode = statusCode;
         this.isOperational = isOperational;
         this.name = "ApiError";
-        //Add stack tracing here, later
+        //stack tracing
+        Error.captureStackTrace(this, this.constructor);
     }
 }

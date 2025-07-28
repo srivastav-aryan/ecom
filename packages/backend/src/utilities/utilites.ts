@@ -8,7 +8,7 @@ export class ApiError extends Error {
     super(message);
     this.name = "ApiError";
 
-    //Add stack tracing here, later
-    
+    //stack tracing
+    Error.captureStackTrace(this, this.constructor);
   }
 }
