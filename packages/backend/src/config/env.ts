@@ -1,10 +1,10 @@
 import dotenv from "dotenv";
-import { z } from "zod";
+import { treeifyError, z } from "zod";
 
 dotenv.config({ quiet: true });
 
 const processEnvSchema = z.object({
-  PORT: z.coerce.number().default(5001),
+  PORT: z.coerce.number(),
   NODE_ENV: z
     .enum(["development", "production", "testing"])
     .default("development"),
@@ -13,8 +13,9 @@ const processEnvSchema = z.object({
 const result = processEnvSchema.safeParse(process.env);
 
 if (!result.success) {
-  console.log(`.env file error:- ${result.error.format}`);
+  console.log(`.env file error:- ${treeifyError(result.error)}`);
   process.exit(1);
 }
+
 
 export const env = result.data;
