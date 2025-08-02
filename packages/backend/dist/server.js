@@ -1,7 +1,11 @@
+import mongoose from "mongoose";
 import { createApp } from "./src/app.js";
+import { connectDB } from "./src/config/dbconfig.js";
 import { env } from "./src/config/env.js";
-const startServer = () => {
+import { startGracefullShutdown } from "./src/utilities/utilites.js";
+const startServer = async () => {
     try {
+        await connectDB();
         const app = createApp();
         const server = app.listen(env.PORT, () => {
             console.log(`server started and listening on port: ${env.PORT}`);
@@ -10,20 +14,8 @@ const startServer = () => {
                 console.log(`Health check:- http://localhost:${env.PORT}/health`);
             }
         });
-        const startGracefullShutdown = (signal) => {
-            console.log(`Recived signal: ${signal}, starting gracefull server shutdown`);
-            server.close(() => {
-                console.log("HTTP server closed.");
-                process.exit(0);
-            });
-            //forced shutdown after 30 seconds
-            setTimeout(() => {
-                console.log("Forced shutdown after timeout");
-                process.exit(1);
-            }, 30000);
-        };
-        process.on("SIGTERM", () => startGracefullShutdown("SIGTERM"));
-        process.on("SIGINT", () => startGracefullShutdown("SIGINT"));
+        process.on("SIGTERM", () => startGracefullShutdown("SIGTERM", server, mongoose.disconnect));
+        process.on("SIGINT", () => startGracefullShutdown("SIGINT", server, mongoose.disconnect));
     }
     catch (error) {
         console.log(`Unable to start the server becasue of error:- ${error}`);

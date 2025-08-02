@@ -11,3 +11,21 @@ export class ApiError extends Error {
         Error.captureStackTrace(this, this.constructor);
     }
 }
+export const startGracefullShutdown = (signal, serverInstance, dbDisconnect) => {
+    console.log(`Recived signal: ${signal}, starting gracefull server shutdown`);
+    serverInstance.close(async () => {
+        console.log("HTTP server closed.");
+        try {
+            await dbDisconnect();
+        }
+        catch (error) {
+            console.error(`error disconnecting the mongoDB:- ${error}`);
+        }
+        process.exit(0);
+    });
+    //forced shutdown after 30 seconds
+    setTimeout(() => {
+        console.log("Forced shutdown after timeout");
+        process.exit(1);
+    }, 30000);
+};
