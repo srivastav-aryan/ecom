@@ -1,9 +1,20 @@
 import mongoose, { ConnectOptions } from "mongoose";
 import { env } from "./env.js";
 
+//Handle connected state 
 mongoose.connection.on("connected", () =>
   console.log("DB connected successfullly")
 );
+
+// Handle disconnection events
+  mongoose.connection.on('disconnected', () => {
+    console.log('⚠️  Database disconnected');
+  });
+
+  // Handle reconnection events
+  mongoose.connection.on('reconnected', () => {
+    console.log('✅ Database reconnected');
+  });
 
 const mongo_Options: ConnectOptions = {
   serverSelectionTimeoutMS: 5000,
