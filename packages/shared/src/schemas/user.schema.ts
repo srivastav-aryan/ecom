@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z, email } from "zod";
 import {
   name_Regex,
   passwordRegex,
@@ -22,7 +22,7 @@ export const userRegistrationSchema = z.object({
         .trim()
         .regex(name_Regex, "Last name can only contain letters and spaces"),
 
-      email: z.string().email("Invalid Email format").toLowerCase().trim(),
+      email: z.email("Invalid Email format").toLowerCase().trim(),
       password: z
         .string()
         .min(password_Min_Length, "Password must be at least 8 characters long")
