@@ -13,7 +13,7 @@ const globalErrorHandler = (
   // some code error programing error
   let statusCode = 500;
   let message = "Generic internal server error";
-  // let errors: string[] | undefined; 
+  let errors: any = undefined;
 
   if (err instanceof ApiError) {
     // for user errors
@@ -23,6 +23,11 @@ const globalErrorHandler = (
     //for zodError
     statusCode = 400;
     message = err.message;
+
+    errors = err.issues.map((error) => ({
+      path: error.path,
+      message: error.message,
+    }));
   }
   // add more type of errors later
 
@@ -37,6 +42,7 @@ const globalErrorHandler = (
   res.status(statusCode).json({
     success: false,
     message,
-    ...(env.NODE_ENV === 'development' ? {stack: err.stack} : {} )
+    ...(errors && { errors: errors }),
+    ...(env.NODE_ENV === "development" ? { stack: err.stack } : {}),
   });
 };
