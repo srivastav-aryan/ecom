@@ -2,16 +2,21 @@
   "name": "e-com",
   "version": "1.0.0",
   "private": true,
-  "workspaces": [
-    "packages/*"
-  ],
   "description": "A mono repo for a ecommerce site",
-  "main": "index.js",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev:backend-node": "pnpm --filter backend dev:node",
+    "dev:backend-ts": "pnpm --filter backend dev:ts",
+    "dev:shared": "pnpm --filter shared dev",
+    "fullstakck-clean": "pnpm --recursive run clean",
+    "backend-clean": "pnpm --filter backend clean",
+    "shared-clean": "pnpm --filter shared clean"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "packageManager": "pnpm@10.12.4"
+  "packageManager": "pnpm@10.12.4",
+  "devDependencies": {
+    "rimraf": "^6.0.1"
+  }
 }

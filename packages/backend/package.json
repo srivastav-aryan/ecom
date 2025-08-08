@@ -10,6 +10,7 @@
     "start": "dist/server.js",
     "dev:node": "nodemon dist/server.js",
     "dev:ts": "tsc --watch",
+    "clean": "rimraf dist",
     "build": "tsc"
   },
   "keywords": [],

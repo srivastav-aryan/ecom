@@ -1,14 +1,24 @@
 {
   "name": "@ecommerce/shared",
   "version": "1.0.0",
-  "description": "",
+  "description": "Shared validation schemas, types, and utilities for e-commerce platformz",
   "type": "module",
-  "main": "index.js",
-  "types": "",
+  "types": "./dist/index.d.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "tsc --watch",
-    "build": "tsc "
+    "clean": "rimraf dist",
+    "build": "tsc"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./schemas": {
+      "types": "./dist/schemas/index.d.ts",
+      "import": "./dist/schemas/index.js"
+    }
   },
   "keywords": [],
   "author": "",
