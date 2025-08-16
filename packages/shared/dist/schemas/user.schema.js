@@ -15,7 +15,13 @@ export const userRegistrationSchema = z.object({
             .max(50, "Last name cannot exceed 50 characters")
             .trim()
             .regex(name_Regex, "Last name can only contain letters and spaces"),
-        email: z.email("Invalid Email format").toLowerCase().trim(),
+        email: z
+            .string()
+            .email({ message: "Invalid email format" }) // Validates it's an email
+            .transform((val) => val.toLowerCase().trim()) // Cleans it (lowercase + trim)
+            .refine((val) => val.length > 0, {
+            message: "Email cannot be empty after trimming",
+        }), // Ex
         password: z
             .string()
             .min(password_Min_Length, "Password must be at least 8 characters long")
