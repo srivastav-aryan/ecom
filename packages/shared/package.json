@@ -1,5 +1,5 @@
 {
-  "name": "@ecommerce/shared",
+  "name": "@e-com/shared",
   "version": "1.0.0",
   "description": "Shared validation schemas, types, and utilities for e-commerce platformz",
   "type": "module",

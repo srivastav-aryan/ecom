@@ -8,7 +8,7 @@
     "module": "esnext" /* Specify what module code is generated. */,
 
     "esModuleInterop": true,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "forceConsistentCasingInFileNames": true /* Ensure that casing is correct in imports. */,
 
     /* Type Checking */

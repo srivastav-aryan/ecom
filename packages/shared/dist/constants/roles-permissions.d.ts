@@ -1,4 +1,4 @@
-declare const USER_ROLES: {
+export declare const USER_ROLES: {
     readonly ADMIN: "ADMIN";
     readonly USER: "USER";
     readonly SUPER_ADMIN: "SUPER_ADMIN";
@@ -27,4 +27,3 @@ export declare const PERMISSIONS: {
 export type Permission = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
 export declare const DEFAULT_PERMISSIONS: Record<UserRole, Permission[]>;
 export declare const hasPermission: (useRole: UserRole, permission: Permission[], requiredPermission: Permission) => boolean;
-export {};
