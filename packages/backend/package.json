@@ -6,7 +6,7 @@
   "main": "dist/server.js",
   "scripts": {
     "lint": "echo 'Linting not set up yet'",
-    "test": "echo 'Tests not set up yet'",
+    "test": "vitest",
     "start": "dist/server.js",
     "dev:node": "nodemon dist/server.js",
     "dev:ts": "tsc --watch",
@@ -37,7 +37,10 @@
     "@types/mongoose": "^5.11.97",
     "@types/morgan": "^1.9.10",
     "@types/node": "^24.1.0",
+    "@vitest/ui": "^3.2.4",
+    "mongodb-memory-server": "^10.2.0",
     "nodemon": "^3.1.10",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.4"
   }
 }

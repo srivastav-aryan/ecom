@@ -94,7 +94,8 @@ const userSchema = new Schema({
         type: Boolean,
         default: true,
     },
-}, { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } });
+}, { timestamps: true });
+//OPTIONALY WE CAN SET TRANSFORM FUCNTION TO REMOVE THE SENSITVE INFO SENT DURING RESPONSE
 userSchema.pre("save", async function (next) {
     if (!this.isModified("password"))
         return next();
@@ -109,8 +110,6 @@ userSchema.methods.generateEmailVerificationToken =
     async function () {
         const buffer = crypto.randomBytes(32);
         const token = buffer.toString("hex");
-        console.log(buffer);
-        console.log(token);
         this.emailVerificationToken = token;
         this.emailVerificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
         return token;

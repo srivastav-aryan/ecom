@@ -7,6 +7,8 @@
     /* Modules */
     "module": "esnext" /* Specify what module code is generated. */,
 
+     "types": ["vitest/globals"],
+
     "esModuleInterop": true,
     "moduleResolution": "bundler",
     "forceConsistentCasingInFileNames": true /* Ensure that casing is correct in imports. */,

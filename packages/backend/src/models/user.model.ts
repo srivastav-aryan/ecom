@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema } from "mongoose";
+import mongoose, { Document, Model, Schema } from "mongoose";
 import { Permission, USER_ROLES, UserRole } from "@e-com/shared/constants";
 import { UserAddress } from "@e-com/shared/schemas";
 import bcrypt from "bcryptjs";
@@ -138,8 +138,10 @@ const userSchema = new Schema<IUser>(
       default: true,
     },
   },
-  { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
+  { timestamps: true }
 );
+
+//OPTIONALY WE CAN SET TRANSFORM FUCNTION TO REMOVE THE SENSITVE INFO SENT DURING RESPONSE
 
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
@@ -159,8 +161,6 @@ userSchema.methods.generateEmailVerificationToken =
   async function (): Promise<string> {
     const buffer = crypto.randomBytes(32);
     const token = buffer.toString("hex");
-    console.log(buffer);
-    console.log(token);
 
     this.emailVerificationToken = token;
     this.emailVerificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
@@ -201,4 +201,4 @@ userSchema.methods.generateRefreshToken = function (): string {
   return jwt.sign({ _id: this._id }, secret, { expiresIn: expiry });
 };
 
-export const User = mongoose.model<IUser>("User", userSchema);
+export const User: Model<IUser> = mongoose.model<IUser>("User", userSchema);
