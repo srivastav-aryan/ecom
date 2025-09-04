@@ -95,7 +95,7 @@ describe("Authentication schema tests", () => {
     it("should validate a valid login input", () => {
       const validInput = {
         body: {
-          email: "TEST@EXAMPLE.COM", // Test transformation
+          email: "TEST@EXAMPLE.COM", 
           password: "MyValidPassword",
         },
       };
