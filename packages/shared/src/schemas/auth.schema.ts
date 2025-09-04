@@ -23,7 +23,6 @@ export const userRegistrationSchema = z.object({
         .regex(name_Regex, "Last name can only contain letters and spaces"),
 
       email: z
-        .string()
         .email({ message: "Invalid email format" }) // Validates it's an email
         .transform((val) => val.toLowerCase().trim()) // Cleans it (lowercase + trim)
         .refine((val) => val.length > 0, {
@@ -45,3 +44,21 @@ export const userRegistrationSchema = z.object({
       path: ["confirmPassword"],
     }),
 });
+
+export type userRegistrationInput = z.infer<
+  typeof userRegistrationSchema
+>["body"];
+
+export const userLoginSchema = z.object({
+  body: z.object({
+    email: z
+      .email({ error: "Email should be of correct format" })
+      .transform((val) => val.toLowerCase().trim()),
+    password: z
+      .string("password is required")
+      .min(password_Min_Length, "Password must be at least 8 characters long")
+      .max(password_Max_Length, "Password must be at most 16 characters long"),
+  }),
+});
+
+export type userLoginInput = z.infer<typeof userLoginSchema>["body"];

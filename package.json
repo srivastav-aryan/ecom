@@ -17,6 +17,7 @@
   "license": "ISC",
   "packageManager": "pnpm@10.12.4",
   "devDependencies": {
-    "rimraf": "^6.0.1"
+    "rimraf": "^6.0.1",
+    "vitest": "^3.2.4"
   }
 }
