@@ -20,6 +20,7 @@ export interface IUser extends Document {
   emailVerificationExpires?: Date;
   passwordResetToken?: string;
   passwordResetExpires?: Date;
+  refreshToken?: string;
 
   cart: Schema.Types.ObjectId;
   wishlist: Schema.Types.ObjectId;
@@ -102,6 +103,10 @@ const userSchema = new Schema<IUser>(
       select: false,
     },
 
+    refreshToken: {
+      type: String,
+      select: false,
+    },
     passwordResetToken: {
       type: String,
       select: false,

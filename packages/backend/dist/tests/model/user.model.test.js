@@ -34,7 +34,7 @@ describe("User model unit tests", () => {
         expect(await user.isPasswordCorrect(pass)).toBe(true);
         expect(await user.isPasswordCorrect("wrongpass")).toBe(false);
     });
-    it("should check the   email verification and password reset  token and its expiry", async () => {
+    it("should check the email verification and password reset  token and its expiry", async () => {
         const user = new User({
             email: "test4@gmail.com",
             firstname: "teswtaryan",
@@ -96,7 +96,7 @@ describe("User model unit tests", () => {
             password: "test123422",
             cart: new mongoose.Types.ObjectId(),
             wishlist: new mongoose.Types.ObjectId(),
-            permissions: [PERMISSIONS.PRODUCTS_CREATE, PERMISSIONS.CATEGORIES_DELETE]
+            permissions: [PERMISSIONS.PRODUCTS_CREATE, PERMISSIONS.CATEGORIES_DELETE],
         });
         await user.save();
         expect(user.permissions).toContain(PERMISSIONS.PRODUCTS_CREATE);
