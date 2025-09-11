@@ -14,15 +14,16 @@ export default class AuthServices {
         const { email, password } = input;
         const user = await User.findOne({ email: email });
         if (!user) {
-            throw new ApiError(400, "sorry no such email exsists");
+            throw new ApiError(400, "Invalid credentials");
         }
         const passCheck = await user.isPasswordCorrect(password);
         if (!passCheck) {
-            throw new ApiError(400, "Incorrect password");
+            throw new ApiError(400, "Invalid credentials");
         }
         const accToken = user.generateAccessToken();
         const refToken = user.generateRefreshToken();
-        await user.save({ validateBeforeSave: false });
+        user.refreshToken = refToken;
+        await user.save();
         return { refToken, accToken };
     }
 }

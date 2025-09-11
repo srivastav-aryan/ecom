@@ -1,44 +1,32 @@
 import { userLoginInput, userRegistrationInput } from "@e-com/shared/schemas";
 import UserServices from "./user.service";
-import { User } from "../models/user.model";
 import { ApiError } from "../utilities/utilites";
+import { IUser } from "../models/user.model";
 
 export default class AuthServices {
   static async registerUser(userInput: userRegistrationInput) {
     const regUser = await UserServices.createUser(userInput);
-
-    const accessToken = regUser.generateAccessToken();
-    const refreshToken = regUser.generateRefreshToken();
-
-    regUser.refreshToken = refreshToken;
-
-    await regUser.save();
-
-    return { refreshToken, accessToken };
+    return this._generateAndAssginToken(regUser);
   }
 
   static async loginUser(input: userLoginInput) {
     const { email, password } = input;
 
-    const user = await User.findOne({ email: email });
+    const user = await UserServices.findUserByEmail(email);
 
-    if (!user) {
+    if (!user || !(await user.isPasswordCorrect(password))) {
       throw new ApiError(400, "Invalid credentials");
     }
 
-    const passCheck = await user.isPasswordCorrect(password);
+    return this._generateAndAssginToken(user);
+  }
 
-    if (!passCheck) {
-      throw new ApiError(400, "Invalid credentials");
-    }
+  private static async _generateAndAssginToken(user: IUser) {
+    const accessToken = user.generateAccessToken();
+    const refreshToken = user.generateRefreshToken();
 
-    const accToken = user.generateAccessToken();
-    const refToken = user.generateRefreshToken();
+    await UserServices.updateRefToken(user.id, refreshToken);
 
-    user.refreshToken = refToken;
-
-    await user.save({ validateBeforeSave: false });
-
-    return { refToken, accToken };
+    return { accessToken, refreshToken };
   }
 }
