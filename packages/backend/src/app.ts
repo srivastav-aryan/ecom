@@ -3,6 +3,7 @@ import helmet from "helmet";
 import { env } from "./config/env.js";
 import compression from "compression";
 import morgan from "morgan";
+import { logStream } from "./utilities/logging.js";
 
 const setupMiddleWares = (app: express.Application): void => {
   app.use(
@@ -13,7 +14,30 @@ const setupMiddleWares = (app: express.Application): void => {
 
   app.use(compression());
 
-  app.use(morgan(env.NODE_ENV == "development" ? "dev" : "combined"));
+  if (env.NODE_ENV == "production") {
+    morgan.token("user-id", (req) =>
+      // @ts-ignore
+      req.user?.id ? String(req.user.id) : "anonymous"
+    );
+
+    app.use(
+      morgan(
+        (tokens, req, res) => {
+          return JSON.stringify({
+            timestamp: new Date().toISOString(),
+            method: tokens.method(req, res),
+            url: tokens.url(req, res),
+            status: tokens.status(req, res),
+            responseTime: tokens["response-time"](req, res),
+            userId: tokens["user-id"](req, res),
+          });
+        },
+        { stream: logStream }
+      )
+    );
+  } else {
+    app.use(morgan("dev"));
+  }
 
   app.use(
     express.json({
