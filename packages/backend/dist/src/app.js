@@ -9,12 +9,14 @@ const setupMiddleWares = (app) => {
     app.use(helmet({
         contentSecurityPolicy: env.NODE_ENV == "development" ? false : undefined,
     }));
+    app.use(compression());
     app.use((req, res, next) => {
         //@ts-ignore
         req.id = randomUUID();
+        //@ts-ignore
+        req.log = logger.child({ reqId: req.id });
         next();
     });
-    app.use(compression());
     if (env.NODE_ENV == "production") {
         morgan.token("user-id", (req) => 
         // @ts-ignore

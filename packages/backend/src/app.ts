@@ -6,6 +6,7 @@ import morgan from "morgan";
 import { logger, logStream } from "./utilities/logging.js";
 import { randomUUID } from "node:crypto";
 
+
 const setupMiddleWares = (app: express.Application): void => {
   app.use(
     helmet({
@@ -13,13 +14,18 @@ const setupMiddleWares = (app: express.Application): void => {
     })
   );
 
+  app.use(compression());
+
   app.use((req: Request, res: Response, next: NextFunction) => {
     //@ts-ignore
     req.id = randomUUID();
+    //@ts-ignore
+    req.log = logger.child({reqId: req.id})
     next();
   });
 
-  app.use(compression());
+
+
 
   if (env.NODE_ENV == "production") {
     morgan.token("user-id", (req) =>
@@ -46,7 +52,7 @@ const setupMiddleWares = (app: express.Application): void => {
           stream: {
             write: (mssg: string) => {
               try {
-                logger.info(JSON.parse(mssg));
+                logger.info(JSON.parse(mssg)); 
               } catch (error) {
                 logger.error("failed to parse morgan log ");
               }

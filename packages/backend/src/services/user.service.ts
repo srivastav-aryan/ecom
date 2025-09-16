@@ -2,10 +2,24 @@ import { userRegistrationInput } from "@e-com/shared/schemas";
 import { IUser, User } from "../models/user.model";
 import { ApiError } from "../utilities/utilites";
 import mongoose from "mongoose";
+import pino from "pino";
 
 export default class UserServices {
-  static async findUserByEmail(email: string): Promise<IUser | null> {
-    const user = await User.findOne({ email: email.toLowerCase() });
+  static async findUserByEmail(
+    email: string,
+    logger: pino.Logger
+  ): Promise<IUser | null> {
+    logger.debug({ email }, "Looking up user by email");
+
+    const user = await User.findOne({ email: email.toLowerCase() }).select(
+      "+password"
+    );
+
+    if (user) {
+      logger.debug({ userId: user.id }, "User found by email");
+    } else {
+      logger.debug({ email }, "No user found by email");
+    }
 
     return user;
   }
@@ -13,31 +27,59 @@ export default class UserServices {
   static async updateRefToken(
     userId: string,
     refreshToken: string,
-    options? : {session: mongoose.ClientSession}
+    logger: pino.Logger,
+    options?: { session: mongoose.ClientSession }
   ): Promise<void> {
-    await User.findByIdAndUpdate(userId, {
-      $set: { refreshToken: refreshToken },
-    }, {session: options?.session});
+    logger.debug({ userId }, "Updating refresh token in database");
+
+    await User.findByIdAndUpdate(
+      userId,
+      { $set: { refreshToken } },
+      { session: options?.session }
+    );
+
+    logger.debug({ userId }, "Refresh token updated");
   }
 
+  static async createUser(
+    input: userRegistrationInput,
+    logger: pino.Logger,
+    options?: { session: mongoose.ClientSession }
+  ): Promise<IUser> {
+    const { email, lastname, firstname, password } = input;
+    const normalizedEmail = email.toLowerCase();
 
-  static async createUser(input: userRegistrationInput, options?: {session: mongoose.ClientSession}): Promise<IUser> {
-    const { email, lastname, firstname, password} = input;
-    const userExists = await User.findOne({ email: email.toLowerCase() }, {session: options?.session});
+    logger.debug({ email: normalizedEmail }, "Checking if user already exists");
+    const userExists = await User.findOne(
+      { email: normalizedEmail },
+      { session: options?.session }
+    );
 
     if (userExists) {
+      logger.warn(
+        { email: normalizedEmail },
+        "Attempt to register with an already registered email"
+      );
       throw new ApiError(
         409,
-        "The email is already registered please login or register with new email"
+        "The email is already registered. Please login or use a new email"
       );
     }
 
-    const [newUser] = await User.create([{
-      email,
-      password,
-      firstname,
-      lastname,
-    }], {session: options?.session});
+    logger.debug({ email: normalizedEmail }, "Creating new user in database");
+    const [newUser] = await User.create(
+      [
+        {
+          email: normalizedEmail,
+          password,
+          firstname,
+          lastname,
+        },
+      ],
+      { session: options?.session }
+    );
+
+    logger.info({ userId: newUser.id }, "New user created successfully");
     return newUser;
   }
 }
