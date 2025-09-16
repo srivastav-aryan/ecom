@@ -27,19 +27,19 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.16.5",
     "morgan": "^1.10.1",
+    "pino": "^9.9.5",
     "rotating-file-stream": "^3.2.7",
     "zod": "^4.0.10"
   },
   "devDependencies": {
     "@types/compression": "^1.8.1",
-    "@types/dotenv": "^8.2.3",
     "@types/express": "^5.0.3",
     "@types/jsonwebtoken": "^9.0.10",
-    "@types/mongoose": "^5.11.97",
     "@types/morgan": "^1.9.10",
     "@types/node": "^24.1.0",
     "mongodb-memory-server": "^10.2.0",
     "nodemon": "^3.1.10",
+    "pino-pretty": "^13.1.1",
     "typescript": "^5.8.3"
   }
 }

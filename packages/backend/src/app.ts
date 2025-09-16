@@ -1,9 +1,10 @@
-import express, { Request, Response } from "express";
+import express, { NextFunction, Request, Response } from "express";
 import helmet from "helmet";
 import { env } from "./config/env.js";
 import compression from "compression";
 import morgan from "morgan";
-import { logStream } from "./utilities/logging.js";
+import { logger, logStream } from "./utilities/logging.js";
+import { randomUUID } from "node:crypto";
 
 const setupMiddleWares = (app: express.Application): void => {
   app.use(
@@ -12,6 +13,12 @@ const setupMiddleWares = (app: express.Application): void => {
     })
   );
 
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    //@ts-ignore
+    req.id = randomUUID();
+    next();
+  });
+
   app.use(compression());
 
   if (env.NODE_ENV == "production") {
@@ -19,12 +26,15 @@ const setupMiddleWares = (app: express.Application): void => {
       // @ts-ignore
       req.user?.id ? String(req.user.id) : "Guest"
     );
+    //@ts-ignore
+    morgan.token("req-id", (req) => req.id);
 
     app.use(
       morgan(
         (tokens, req, res) => {
           return JSON.stringify({
             timestamp: new Date().toISOString(),
+            reqId: tokens["req-id"](req, res),
             method: tokens.method(req, res),
             url: tokens.url(req, res),
             status: tokens.status(req, res),
@@ -32,7 +42,17 @@ const setupMiddleWares = (app: express.Application): void => {
             userId: tokens["user-id"](req, res),
           });
         },
-        { stream: logStream }
+        {
+          stream: {
+            write: (mssg: string) => {
+              try {
+                logger.info(JSON.parse(mssg));
+              } catch (error) {
+                logger.error("failed to parse morgan log ");
+              }
+            },
+          },
+        }
       )
     );
   } else {
