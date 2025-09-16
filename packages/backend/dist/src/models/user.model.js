@@ -17,6 +17,7 @@ const userSchema = new Schema({
         required: true,
         minlength: 8,
         maxlength: 16,
+        select: false,
     },
     firstname: {
         type: String,

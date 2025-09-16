@@ -12,7 +12,7 @@ const setupMiddleWares = (app) => {
     if (env.NODE_ENV == "production") {
         morgan.token("user-id", (req) => 
         // @ts-ignore
-        req.user?.id ? String(req.user.id) : "anonymous");
+        req.user?.id ? String(req.user.id) : "Guest");
         app.use(morgan((tokens, req, res) => {
             return JSON.stringify({
                 timestamp: new Date().toISOString(),

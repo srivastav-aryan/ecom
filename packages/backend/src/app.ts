@@ -17,7 +17,7 @@ const setupMiddleWares = (app: express.Application): void => {
   if (env.NODE_ENV == "production") {
     morgan.token("user-id", (req) =>
       // @ts-ignore
-      req.user?.id ? String(req.user.id) : "anonymous"
+      req.user?.id ? String(req.user.id) : "Guest"
     );
 
     app.use(
