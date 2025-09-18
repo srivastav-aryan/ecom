@@ -1,5 +1,5 @@
 import mongoose, { Schema } from "mongoose";
-import { USER_ROLES } from "@e-com/shared/constants";
+import { DEFAULT_PERMISSIONS, USER_ROLES, } from "@e-com/shared/constants";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
@@ -39,7 +39,8 @@ const userSchema = new Schema({
     },
     permissions: {
         type: [String],
-        default: [],
+        default: DEFAULT_PERMISSIONS.USER,
+        required: true,
     },
     phone: {
         type: String,
@@ -69,6 +70,11 @@ const userSchema = new Schema({
         type: String,
         select: false,
     },
+    refreshTokenVersion: {
+        type: Number,
+        default: 0,
+        select: false,
+    },
     passwordResetToken: {
         type: String,
         select: false,
@@ -80,20 +86,24 @@ const userSchema = new Schema({
     cart: {
         type: Schema.Types.ObjectId,
         ref: "Cart",
-        required: true,
+        //for nowwwww
+        // required: true,
     },
     wishlist: {
         type: Schema.Types.ObjectId,
         ref: "Wishlist",
-        required: true,
+        //for nowwwww
+        // required: true,
     },
     reviews: {
-        type: Schema.Types.ObjectId,
+        type: [Schema.Types.ObjectId],
         ref: "Review",
+        default: [],
     },
     orderHistory: {
-        type: Schema.Types.ObjectId,
+        type: [Schema.Types.ObjectId],
         ref: "Order",
+        default: [],
     },
     isActive: {
         type: Boolean,
@@ -139,6 +149,6 @@ userSchema.methods.generateRefreshToken = function () {
     const expiry = env.REFRESH_TOKEN_EXPIRY
         ? env.REFRESH_TOKEN_EXPIRY
         : "7d";
-    return jwt.sign({ _id: this._id }, secret, { expiresIn: expiry });
+    return jwt.sign({ _id: this._id, tokenVersion: this.refreshTokenVersion || 0 }, secret, { expiresIn: expiry });
 };
 export const User = mongoose.model("User", userSchema);

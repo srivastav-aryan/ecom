@@ -1,5 +1,10 @@
 import mongoose, { Document, Model, Schema } from "mongoose";
-import { Permission, USER_ROLES, UserRole } from "@e-com/shared/constants";
+import {
+  DEFAULT_PERMISSIONS,
+  Permission,
+  USER_ROLES,
+  UserRole,
+} from "@e-com/shared/constants";
 import { UserAddress } from "@e-com/shared/schemas";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
@@ -21,6 +26,7 @@ export interface IUser extends Document {
   passwordResetToken?: string;
   passwordResetExpires?: Date;
   refreshToken?: string;
+  refreshTokenVersion?: Number;
 
   cart: Schema.Types.ObjectId;
   wishlist: Schema.Types.ObjectId;
@@ -74,7 +80,8 @@ const userSchema = new Schema<IUser>(
     },
     permissions: {
       type: [String],
-      default: [],
+      default: DEFAULT_PERMISSIONS.USER,
+      required: true,
     },
 
     phone: {
@@ -108,6 +115,13 @@ const userSchema = new Schema<IUser>(
       type: String,
       select: false,
     },
+
+    refreshTokenVersion: {
+      type: Number,
+      default: 0,
+      select: false,
+    },
+
     passwordResetToken: {
       type: String,
       select: false,
@@ -120,23 +134,29 @@ const userSchema = new Schema<IUser>(
     cart: {
       type: Schema.Types.ObjectId,
       ref: "Cart",
-      required: true,
+
+      //for nowwwww
+      // required: true,
     },
 
     wishlist: {
       type: Schema.Types.ObjectId,
       ref: "Wishlist",
-      required: true,
+
+      //for nowwwww
+      // required: true,
     },
 
     reviews: {
-      type: Schema.Types.ObjectId,
+      type: [Schema.Types.ObjectId],
       ref: "Review",
+      default: [],
     },
 
     orderHistory: {
-      type: Schema.Types.ObjectId,
+      type: [Schema.Types.ObjectId],
       ref: "Order",
+      default: [],
     },
 
     isActive: {
@@ -204,7 +224,11 @@ userSchema.methods.generateRefreshToken = function (): string {
     ? (env.REFRESH_TOKEN_EXPIRY as SignOptions["expiresIn"])
     : "7d";
 
-  return jwt.sign({ _id: this._id }, secret, { expiresIn: expiry });
+  return jwt.sign(
+    { _id: this._id, tokenVersion: this.refreshTokenVersion || 0 },
+    secret,
+    { expiresIn: expiry }
+  );
 };
 
 export const User: Model<IUser> = mongoose.model<IUser>("User", userSchema);
