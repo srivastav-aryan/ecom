@@ -6,6 +6,28 @@ import mongoose from "mongoose";
 import pino from "pino";
 
 export default class AuthServices {
+  private static async _generateAndAssignToken(
+    user: IUser,
+    logger?: pino.Logger,
+    options?: { session: mongoose.ClientSession }
+  ) {
+    logger?.info(
+      { userId: user.id },
+      "starting the process of token generation for this user"
+    );
+
+    const accessToken = user.generateAccessToken();
+
+    logger?.debug({ userId: user.id }, "access token generated");
+
+    const refreshToken = user.generateRefreshToken();
+    logger?.debug({ userId: user.id }, "refresh token generated");
+
+    await UserServices.updateRefToken(user.id, refreshToken, logger, options);
+
+    return { accessToken, refreshToken };
+  }
+
   static async registerUser(
     userInput: userRegistrationInput,
     logger?: pino.Logger
@@ -64,27 +86,5 @@ export default class AuthServices {
     logger?.info({ userId: user.id }, "Login successful");
 
     return this._generateAndAssignToken(user, logger);
-  }
-
-  private static async _generateAndAssignToken(
-    user: IUser,
-    logger?: pino.Logger,
-    options?: { session: mongoose.ClientSession }
-  ) {
-    logger?.info(
-      { userId: user.id },
-      "starting the process of token generation for this user"
-    );
-
-    const accessToken = user.generateAccessToken();
-
-    logger?.debug({ userId: user.id }, "access token generated");
-
-    const refreshToken = user.generateRefreshToken();
-    logger?.debug({ userId: user.id }, "refresh token generated");
-
-    await UserServices.updateRefToken(user.id, refreshToken, logger, options);
-
-    return { accessToken, refreshToken };
   }
 }

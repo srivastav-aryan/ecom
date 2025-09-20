@@ -5,8 +5,9 @@ import pino from "pino";
 import { env } from "../config/env.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const pathToLog = path.join(__dirname, "..", "logs");
 export const logStream = createStream("access.log", {
-    path: path.join(__dirname, "..", "logs"),
+    path: pathToLog,
     interval: "1d",
     maxSize: "10M",
     compress: "gzip",
