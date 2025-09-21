@@ -1,3 +1,5 @@
+import pino from "pino";
+
 type AttemptType = {
   attemptCount: number;
   timeOut: NodeJS.Timeout;
@@ -8,7 +10,10 @@ export default class RateLimiterService {
 
   constructor(private windowMs: number, private maxAttempt: number) {}
 
-  checkRateLimit(identifier: string): {
+  checkRateLimit(
+    identifier: string,
+    logger?: pino.Logger
+  ): {
     allowed: boolean;
     remainingAttempts: number;
     resetTime: Date;
@@ -20,16 +25,30 @@ export default class RateLimiterService {
     if (!user) {
       const timeOut = setTimeout(() => {
         this.attemptsByUsers.delete(identifier);
+        logger?.info({ identifier }, "Rate limit window expired, resetting");
       }, this.windowMs);
 
       user = { attemptCount: 0, timeOut };
       this.attemptsByUsers.set(identifier, user);
+
+      logger?.info(
+        { identifier, windowMs: this.windowMs, maxAttempt: this.maxAttempt },
+        "Initialized rate limiter for new identifier"
+      );
     }
 
-    // increment attempts
     user.attemptCount++;
+    logger?.debug(
+      { identifier, attempt: user.attemptCount },
+      "Attempt recorded"
+    );
 
     if (user.attemptCount > this.maxAttempt) {
+      logger?.warn(
+        { identifier, attempt: user.attemptCount },
+        "Rate limit exceeded"
+      );
+
       return {
         allowed: false,
         remainingAttempts: 0,

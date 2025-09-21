@@ -2,7 +2,7 @@ import { ZodError } from "zod";
 import { ApiError } from "../utilities/utilites.js";
 import { env } from "../config/env.js";
 // globall error handler
-const globalErrorHandler = (err, req, res, next) => {
+export const globalErrorHandler = (err, req, res, next) => {
     // some code error programing error
     let statusCode = 500;
     let message = "Generic internal server error";

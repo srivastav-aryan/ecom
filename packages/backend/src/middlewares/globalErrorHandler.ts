@@ -4,7 +4,7 @@ import { ApiError } from "../utilities/utilites.js";
 import { env } from "../config/env.js";
 
 // globall error handler
-const globalErrorHandler = (
+export const globalErrorHandler = (
   err: Error,
   req: Request,
   res: Response,

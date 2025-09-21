@@ -5,6 +5,8 @@ import compression from "compression";
 import morgan from "morgan";
 import { logger } from "./utilities/logging.js";
 import { randomUUID } from "node:crypto";
+import { authRouter } from "./routes/auth.routes.js";
+import { globalErrorHandler } from "./middlewares/globalErrorHandler.js";
 
 
 const setupMiddleWares = (app: express.Application): void => {
@@ -93,6 +95,14 @@ export const createApp = (): express.Application => {
       environment: env.NODE_ENV,
     });
   });
+
+
+  // user endpoint for REST API
+  app.use("/api/user", authRouter)
+
+
+  //global error handler 
+  app.use(globalErrorHandler)
 
   return app;
 };
