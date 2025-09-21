@@ -3,6 +3,7 @@ import { ApiError } from "../utilities/utilites";
 import mongoose from "mongoose";
 export default class AuthServices {
     static async _generateAndAssignToken(user, logger, options) {
+        // email verifcation later to be added 
         logger?.info({ userId: user.id }, "starting the process of token generation for this user");
         const accessToken = user.generateAccessToken();
         logger?.debug({ userId: user.id }, "access token generated");

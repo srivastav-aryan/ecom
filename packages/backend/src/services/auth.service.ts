@@ -11,6 +11,8 @@ export default class AuthServices {
     logger?: pino.Logger,
     options?: { session: mongoose.ClientSession }
   ) {
+
+    // email verifcation later to be added 
     logger?.info(
       { userId: user.id },
       "starting the process of token generation for this user"

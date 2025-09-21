@@ -48,6 +48,7 @@ const userSchema = new Schema({
             /^[0-9]{10,15}$/,
             "Invalid phone number format (10-15 digits expected)",
         ],
+        unique: true,
         default: null,
     },
     addresses: {
