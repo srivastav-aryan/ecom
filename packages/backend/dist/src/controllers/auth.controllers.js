@@ -1,6 +1,6 @@
 // Following factory function pattern instead of classes
-import { env } from "../config/env";
-import { ApiError } from "../utilities/utilites";
+import { env } from "../config/env.js";
+import { ApiError } from "../utilities/utilites.js";
 export const authControllerCreator = (deps) => {
     const { AuthServices, loginLimitter } = deps;
     return {

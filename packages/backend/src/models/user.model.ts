@@ -9,7 +9,7 @@ import { UserAddress } from "@e-com/shared/schemas";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import jwt, { Secret, SignOptions } from "jsonwebtoken";
-import { env } from "../config/env";
+import { env } from "../config/env.js";
 
 export interface IUser extends Document {
   email: string;

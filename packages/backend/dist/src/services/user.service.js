@@ -1,5 +1,5 @@
-import { User } from "../models/user.model";
-import { ApiError } from "../utilities/utilites";
+import { User } from "../models/user.model.js";
+import { ApiError } from "../utilities/utilites.js";
 export default class UserServices {
     static async findUserByEmail(email, logger) {
         logger?.debug({ email }, "Looking up user by email");

@@ -1,7 +1,7 @@
-import { env } from "../config/env";
-import { authControllerCreator } from "../controllers/auth.controllers";
-import AuthServices from "../services/auth.service";
-import RateLimiterService from "../services/ratelimter.service";
+import { env } from "../config/env.js";
+import { authControllerCreator } from "../controllers/auth.controllers.js";
+import AuthServices from "../services/auth.service.js";
+import RateLimiterService from "../services/ratelimter.service.js";
 
 const loginLimitter = new RateLimiterService(
   Number(env.LOGIN_WINDOW_MS),

@@ -1,2 +1,2 @@
-export * from "./constants";
-export * from "./roles-permissions";
+export * from "./constants.js";
+export * from "./roles-permissions.js";

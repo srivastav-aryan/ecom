@@ -1,5 +1,5 @@
-import UserServices from "./user.service";
-import { ApiError } from "../utilities/utilites";
+import UserServices from "./user.service.js";
+import { ApiError } from "../utilities/utilites.js";
 import mongoose from "mongoose";
 export default class AuthServices {
     static async _generateAndAssignToken(user, logger, options) {

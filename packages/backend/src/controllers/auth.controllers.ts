@@ -2,8 +2,8 @@
 
 import { NextFunction, Request, Response } from "express";
 import pino from "pino";
-import { env } from "../config/env";
-import { ApiError } from "../utilities/utilites";
+import { env } from "../config/env.js";
+import { ApiError } from "../utilities/utilites.js";
 import { userLoginInput, userRegistrationInput } from "@e-com/shared/schemas";
 
 export interface IAuthService {

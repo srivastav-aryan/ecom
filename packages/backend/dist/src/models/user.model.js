@@ -3,7 +3,7 @@ import { DEFAULT_PERMISSIONS, USER_ROLES, } from "@e-com/shared/constants";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
-import { env } from "../config/env";
+import { env } from "../config/env.js";
 const userSchema = new Schema({
     email: {
         type: String,
