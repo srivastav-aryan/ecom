@@ -3,7 +3,7 @@ import { ApiError } from "../utilities/utilites.js";
 import mongoose from "mongoose";
 export default class AuthServices {
     static async _generateAndAssignToken(user, logger, options) {
-        // email verifcation later to be added 
+        // email verifcation later to be added
         logger?.info({ userId: user.id }, "starting the process of token generation for this user");
         const accessToken = user.generateAccessToken();
         logger?.debug({ userId: user.id }, "access token generated");
@@ -32,7 +32,7 @@ export default class AuthServices {
         catch (error) {
             logger?.error({ err: error, email: userInput.email }, "User registration failed");
             await session.abortTransaction();
-            throw new ApiError(500, "Internal server issue", false);
+            throw new ApiError(error.statusCode, error.message, false);
         }
         finally {
             session.endSession();

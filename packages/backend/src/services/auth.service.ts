@@ -11,8 +11,7 @@ export default class AuthServices {
     logger?: pino.Logger,
     options?: { session: mongoose.ClientSession }
   ) {
-
-    // email verifcation later to be added 
+    // email verifcation later to be added
     logger?.info(
       { userId: user.id },
       "starting the process of token generation for this user"
@@ -54,13 +53,13 @@ export default class AuthServices {
       logger?.info({ userId: regUser.id }, "User registration successful");
 
       return tokens;
-    } catch (error) {
+    } catch (error: any) {
       logger?.error(
         { err: error, email: userInput.email },
         "User registration failed"
       );
       await session.abortTransaction();
-      throw new ApiError(500, "Internal server issue", false);
+      throw new ApiError(error.statusCode, error.message, false);
     } finally {
       session.endSession();
       logger?.debug("Mongoose session closed");

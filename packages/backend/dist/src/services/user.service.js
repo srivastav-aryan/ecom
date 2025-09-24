@@ -24,18 +24,20 @@ export default class UserServices {
     static async createUser(input, logger, options) {
         const { email, lastname, firstname, password } = input;
         logger?.debug({ email }, "Checking if user already exists");
-        const userExists = await User.findOne({ email }, { session: options?.session });
+        const userExists = await User.findOne({ email }, null, { session: options?.session });
         if (userExists) {
             logger?.warn({ email }, "Attempt to register with an already registered email");
             throw new ApiError(409, "The email is already registered. Please login or use a new email");
         }
         logger?.debug({ email }, "Creating new user in database");
-        const [newUser] = await User.create({
-            email,
-            password,
-            firstname,
-            lastname,
-        }, { session: options?.session });
+        const [newUser] = await User.create([
+            {
+                email,
+                password,
+                firstname,
+                lastname,
+            },
+        ], { session: options?.session });
         logger?.info({ userId: newUser.id }, "New user created successfully");
         return newUser;
     }

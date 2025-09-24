@@ -35,9 +35,7 @@ export const globalErrorHandler = (
   console.error(
     `error occured with statusCode:- ${statusCode} and message:-${message}`
   );
-  if (env.NODE_ENV == "development") {
-    console.error(`the stacktrace:- ${err.stack}`);
-  }
+  
 
   res.status(statusCode).json({
     success: false,

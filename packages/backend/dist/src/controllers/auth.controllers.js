@@ -42,11 +42,6 @@ export const authControllerCreator = (deps) => {
                     path: "/auth/refresh",
                     maxAge: parseInt(env.REFRESH_TOKEN_EXPIRY, 10) || 7 * 24 * 60 * 60 * 1000,
                 });
-                res.status(201).json({
-                    success: true,
-                    data: { accessToken },
-                    message: "User Registered Successfu",
-                });
                 res.status(200).json({
                     success: true,
                     data: { accessToken },

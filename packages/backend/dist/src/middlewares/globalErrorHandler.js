@@ -24,9 +24,6 @@ export const globalErrorHandler = (err, req, res, next) => {
     // add more type of errors later
     // log for debuging
     console.error(`error occured with statusCode:- ${statusCode} and message:-${message}`);
-    if (env.NODE_ENV == "development") {
-        console.error(`the stacktrace:- ${err.stack}`);
-    }
     res.status(statusCode).json({
         success: false,
         message,

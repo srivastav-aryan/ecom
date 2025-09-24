@@ -19,8 +19,12 @@ const startServer = async (): Promise<void> => {
       }
     });
 
-    process.on("SIGTERM", () => startGracefullShutdown("SIGTERM", server, mongoose.disconnect));
-    process.on("SIGINT", () => startGracefullShutdown("SIGINT", server , mongoose.disconnect));
+    process.on("SIGTERM", () =>
+      startGracefullShutdown("SIGTERM", server, mongoose.disconnect)
+    );
+    process.on("SIGINT", () =>
+      startGracefullShutdown("SIGINT", server, mongoose.disconnect)
+    );
   } catch (error) {
     console.log(`Unable to start the server becasue of error:- ${error}`);
     process.exit(1);

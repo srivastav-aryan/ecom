@@ -34,7 +34,7 @@ export default class UserServices {
 
     const updated = await User.findByIdAndUpdate(
       userId,
-      { $set: { refreshToken }, $inc: {refreshTokenVersion: 1} },
+      { $set: { refreshToken }, $inc: { refreshTokenVersion: 1 } },
       { session: options?.session }
     );
 
@@ -53,12 +53,11 @@ export default class UserServices {
   ): Promise<IUser> {
     const { email, lastname, firstname, password } = input;
 
-    logger?.debug(
-      { email },
-      "Checking if user already exists"
-    );
+    logger?.debug({ email }, "Checking if user already exists");
+
     const userExists = await User.findOne(
       { email },
+      null,
       { session: options?.session }
     );
 
@@ -75,13 +74,14 @@ export default class UserServices {
 
     logger?.debug({ email }, "Creating new user in database");
     const [newUser] = await User.create(
-      {
-        email,
-        password,
-        firstname,
-        lastname,
-      },
-
+      [
+        {
+          email,
+          password,
+          firstname,
+          lastname,
+        },
+      ],
       { session: options?.session }
     );
 
