@@ -6,7 +6,7 @@ node_modules
 .env.testing
 
 
-# Logs
+# Logs and dist
 logs
 *.log
 npm-debug.log*
@@ -19,7 +19,6 @@ dist/*
 **/dist/
 dist-ssr
 *.local
-
 packages/*/dist/
 
 # Editor directories and files
