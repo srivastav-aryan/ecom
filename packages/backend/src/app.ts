@@ -16,13 +16,15 @@ const setupMiddleWares = (app: express.Application): void => {
     })
   );
 
+
   app.use(compression());
 
   app.use((req: Request, res: Response, next: NextFunction) => {
     //@ts-ignore
     req.id = randomUUID();
     //@ts-ignore
-    req.log = logger.child({reqId: req.id})
+    req.log = logger.child({ reqId: req.id })
+
     next();
   });
 
@@ -54,7 +56,7 @@ const setupMiddleWares = (app: express.Application): void => {
           stream: {
             write: (mssg: string) => {
               try {
-                logger.info(JSON.parse(mssg)); 
+                logger.info(JSON.parse(mssg));
               } catch (error) {
                 logger.error("failed to parse morgan log ");
               }

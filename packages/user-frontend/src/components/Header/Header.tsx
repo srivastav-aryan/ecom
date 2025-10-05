@@ -1,10 +1,12 @@
 // import React from 'react'
+// import { mockNaviData } from "@/mocks/navigationMocks";
 import { Heart, Search, ShoppingBasketIcon, User } from "lucide-react";
+// import { Link } from "react-router-dom";
 
 function Header() {
   return (
     <header>
-      <div className=" flex items-center justify-between px-11">
+      <div className="flex items-center justify-between px-11">
         <svg
           width="200"
           height="60"
@@ -12,7 +14,6 @@ function Header() {
           xmlns="http://www.w3.org/2000/svg"
         >
           <title>Ecom Logo with Tailwind CSS</title>
-
           <text
             x="0"
             y="45"
@@ -33,16 +34,16 @@ function Header() {
             type="text"
             placeholder="Search..."
             className="
-          w-full
-          py-2.5 pl-10 pr-4
-          text-gray-900
-          bg-white
-          border border-gray-300
-          rounded-xl
-          focus:outline-none focus:ring-2 focus:ring-black focus:border-black
-          placeholder-gray-500
-          transition duration-150 ease-in-out
-        "
+              w-full
+              py-2.5 pl-10 pr-4
+              text-gray-900
+              bg-white
+              border border-gray-300
+              rounded-xl
+              focus:outline-none focus:ring-2 focus:ring-black focus:border-black
+              placeholder-gray-500
+              transition duration-150 ease-in-out
+            "
           />
         </div>
 
@@ -54,7 +55,9 @@ function Header() {
       </div>
 
       <div>
-        <nav>{/* wait for it  */}</nav>
+        <nav>
+         
+        </nav>
       </div>
     </header>
   );

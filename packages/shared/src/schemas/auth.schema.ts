@@ -4,7 +4,7 @@ import {
   passwordRegex,
   password_Max_Length,
   password_Min_Length,
-} from "../constants/constants.js";
+} from "../types/constants.js";
 
 export const userRegistrationSchema = z.object({
   body: z

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { name_Regex, passwordRegex, password_Max_Length, password_Min_Length, } from "../constants/constants.js";
+import { name_Regex, passwordRegex, password_Max_Length, password_Min_Length, } from "../types/constants.js";
 export const userRegistrationSchema = z.object({
     body: z
         .object({
