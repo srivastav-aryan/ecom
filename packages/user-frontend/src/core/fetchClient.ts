@@ -28,6 +28,6 @@ export async function fetchClient(
     console.error("Fetch failed:", error);
     throw error;
   } finally {
-    clearInterval(id);
+    clearTimeout(id);
   }
 }

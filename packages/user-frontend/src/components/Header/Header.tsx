@@ -1,9 +1,15 @@
-// import React from 'react'
-// import { mockNaviData } from "@/mocks/navigationMocks";
 import { Heart, Search, ShoppingBasketIcon, User } from "lucide-react";
-// import { Link } from "react-router-dom";
+import Nav from "./Nav";
+import type { NavigationData } from "@e-com/shared/types";
 
-function Header() {
+
+
+interface HeaderProps {
+  navData: NavigationData
+}
+
+
+function Header({navData}: HeaderProps) {
   return (
     <header>
       <div className="flex items-center justify-between px-11">
@@ -54,11 +60,7 @@ function Header() {
         </div>
       </div>
 
-      <div>
-        <nav>
-         
-        </nav>
-      </div>
+      <Nav />
     </header>
   );
 }
