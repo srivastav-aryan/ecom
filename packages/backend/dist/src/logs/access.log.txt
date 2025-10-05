@@ -1,1 +1,0 @@
-/home/aryan/projects/amazon/packages/backend/dist/src/logs/20250921-0000-01-access.log.gz
