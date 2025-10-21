@@ -5,14 +5,13 @@ export interface fetchOptions extends RequestInit {
 // minimal for now
 export async function fetchClient(
   input: RequestInfo,
-  options: fetchOptions = {}
+  options: fetchOptions = {},
 ) {
   const timeOut = options.timeOut || 5000;
   const controller = new AbortController();
-  const baseUrl = import.meta.env.VITE_API_BASE_URL;
+  const baseUrl = import.meta.env.VITE_API_BASE_URL || "/api";
 
   const url = `${baseUrl}${input}`;
-
   const id = setTimeout(() => {
     controller.abort();
   }, timeOut);

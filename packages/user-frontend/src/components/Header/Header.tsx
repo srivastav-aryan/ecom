@@ -1,15 +1,13 @@
 import { Heart, Search, ShoppingBasketIcon, User } from "lucide-react";
-import Nav from "./Nav";
 import type { NavigationData } from "@e-com/shared/types";
-
-
+import Navbar from "./Navbar";
 
 interface HeaderProps {
-  navData: NavigationData
+  navData: NavigationData;
 }
 
-
-function Header({navData}: HeaderProps) {
+function Header({ navData }: HeaderProps) {
+  
   return (
     <header>
       <div className="flex items-center justify-between px-11">
@@ -60,7 +58,7 @@ function Header({navData}: HeaderProps) {
         </div>
       </div>
 
-      <Nav />
+      <Navbar navItems={navData.navItems} />
     </header>
   );
 }

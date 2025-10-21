@@ -4,7 +4,7 @@ import {
   Permission,
   USER_ROLES,
   UserRole,
-} from "@e-com/shared/constants";
+} from "@e-com/shared/types";
 import { UserAddress } from "@e-com/shared/schemas";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
@@ -165,27 +165,27 @@ const userSchema = new Schema<IUser>(
       default: true,
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 //OPTIONALY WE CAN SET TRANSFORM FUCNTION TO REMOVE THE SENSITVE INFO SENT DURING RESPONSE
 
-userSchema.pre("save", async function (next) {
+userSchema.pre("save", async function(next) {
   if (!this.isModified("password")) return next();
 
   this.password = await bcrypt.hash(this.password, 12);
   next();
 });
 
-userSchema.methods.isPasswordCorrect = async function (
-  password: string
+userSchema.methods.isPasswordCorrect = async function(
+  password: string,
 ): Promise<boolean> {
   const res = await bcrypt.compare(password, this.password);
   return res;
 };
 
 userSchema.methods.generateEmailVerificationToken =
-  async function (): Promise<string> {
+  async function(): Promise<string> {
     const buffer = crypto.randomBytes(32);
     const token = buffer.toString("hex");
 
@@ -196,7 +196,7 @@ userSchema.methods.generateEmailVerificationToken =
   };
 
 userSchema.methods.generatePasswordResetToken =
-  async function (): Promise<string> {
+  async function(): Promise<string> {
     const buffer = crypto.randomBytes(32);
     const token = buffer.toString("hex");
 
@@ -206,7 +206,7 @@ userSchema.methods.generatePasswordResetToken =
     return token;
   };
 
-userSchema.methods.generateAccessToken = function (): string {
+userSchema.methods.generateAccessToken = function(): string {
   const secret: Secret = env.ACCESS_TOKEN_SECRET as string;
   const expiry: SignOptions["expiresIn"] = env.ACCESS_TOKEN_EXPIRY
     ? (env.ACCESS_TOKEN_EXPIRY as SignOptions["expiresIn"])
@@ -215,11 +215,11 @@ userSchema.methods.generateAccessToken = function (): string {
   return jwt.sign(
     { _id: this._id, email: this.email, role: this.role },
     secret,
-    { expiresIn: expiry }
+    { expiresIn: expiry },
   );
 };
 
-userSchema.methods.generateRefreshToken = function (): string {
+userSchema.methods.generateRefreshToken = function(): string {
   const secret: Secret = env.REFRESH_TOKEN_SECRET as string;
   const expiry: SignOptions["expiresIn"] = env.REFRESH_TOKEN_EXPIRY
     ? (env.REFRESH_TOKEN_EXPIRY as SignOptions["expiresIn"])
@@ -228,7 +228,7 @@ userSchema.methods.generateRefreshToken = function (): string {
   return jwt.sign(
     { _id: this._id, tokenVersion: this.refreshTokenVersion || 0 },
     secret,
-    { expiresIn: expiry }
+    { expiresIn: expiry },
   );
 };
 

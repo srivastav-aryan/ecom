@@ -4,7 +4,7 @@ import {
   DEFAULT_PERMISSIONS,
   PERMISSIONS,
   USER_ROLES,
-} from "@e-com/shared/constants";
+} from "@e-com/shared/types";
 
 describe("User model unit tests", () => {
   it("this should hash password before saving", async () => {
@@ -56,11 +56,11 @@ describe("User model unit tests", () => {
     expect(typeof token).toBe("string");
     expect(typeof passToken).toBe("string");
 
-    expect(user.emailVerificationToken).toBe(token),
-      expect(user.passwordResetToken).toBe(passToken);
+    (expect(user.emailVerificationToken).toBe(token),
+      expect(user.passwordResetToken).toBe(passToken));
     expect(user.emailVerificationExpires).toBeInstanceOf(Date);
     expect(user.emailVerificationExpires?.getTime()).toBeGreaterThan(
-      Date.now()
+      Date.now(),
     );
     expect(user.passwordResetExpires).toBeInstanceOf(Date);
     expect(user.passwordResetExpires?.getTime()).toBeGreaterThan(Date.now());

@@ -2,12 +2,12 @@ import { Outlet, useLoaderData } from "react-router-dom";
 import Header from "@/components/Header/Header";
 
 function RootLayout() {
-  const gg = useLoaderData()
-  console.log(gg);
+  const navData = useLoaderData();
   
+
   return (
     <main>
-      <Header />
+      <Header navData={navData} />
       <Outlet />
     </main>
   );
