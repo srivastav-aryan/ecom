@@ -1,6 +1,6 @@
 import dotenv from "dotenv";
 
-import { treeifyError, z } from "zod";
+import { z } from "zod";
 
 dotenv.config({ quiet: true });
 

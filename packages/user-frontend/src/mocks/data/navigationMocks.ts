@@ -35,6 +35,28 @@ export const mockNaviData: NavigationData = {
           ],
         },
         {
+          name: "MENS",
+          items: [
+            {
+              id: "boxer-shorts",
+              label: "Boxer Shorts",
+              href: "/underwear/mens/boxer-shorts",
+              badge: "POPULAR",
+            },
+            {
+              id: "bamboo-boxers",
+              label: "Bamboo Boxer Shorts",
+              href: "/underwear/mens/bamboo-boxers",
+              badge: "SELLING FAST",
+            },
+            {
+              id: "briefs",
+              label: "Briefs",
+              href: "/underwear/mens/briefs",
+            },
+          ],
+        },
+        {
           name: "WOMENS UNDERWEAR",
           items: [
             {
@@ -130,11 +152,42 @@ export const mockNaviData: NavigationData = {
               id: "crown",
               label: "Crown",
               href: "/accessories/jewelry/crown",
-            }
+            },
           ],
         },
       ],
     },
+    {
+      id: "subscription",
+      label: "SUBSCRIPTION",
+      href: "/subscription",
+      hasMenu: [
+        {
+          name: "Demo",
+          items: [
+            {
+              id: "1234",
+              label: "mens subscription",
+              href: ""
+            }
+          ]
+        },
+
+        {
+          name: "Demo2",
+          items: [
+            {
+              label:"Womens subscription",
+              id: "Demo2",
+              href: ""
+
+            } 
+          ]
+        }
+
+      ]
+    } ,
+
     {
       id: "sale",
       label: "SALE",

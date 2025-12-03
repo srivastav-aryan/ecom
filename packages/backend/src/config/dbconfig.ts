@@ -32,7 +32,7 @@ const mongo_Options: ConnectOptions = {
 };
 
 // retrying options
-const DB_RETRY_LIMIT = 4;
+const DB_RETRY_LIMIT: number = 4;
 const INITIAL_RETRY_DELAY_MS = 1000;
 
 // encapsulated connection logic

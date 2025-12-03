@@ -1,7 +1,7 @@
 import { Server } from "node:http";
 
 
-// coustom Api endpoint error creator
+// custom Api endpoint error creator
 export class ApiError extends Error {
   constructor(
     public statusCode: number,

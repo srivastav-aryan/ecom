@@ -5,11 +5,15 @@ export const validateReq =
   (schema: ZodObject<any>) =>
   (req: Request, res: Response, next: NextFunction) => {
     try {
-      schema.parse({
+      const parsedData =  schema.parse({
         body: req.body,
-        querry: req.query,
+        query: req.query,
         params: req.params,
       });
+
+      req.body = parsedData.body
+      // req.query = parsedData.query
+      // req.params = parsedData.params
 
       next();
     } catch (error) {

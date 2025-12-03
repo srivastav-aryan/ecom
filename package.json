@@ -5,8 +5,10 @@
   "description": "A mono repo for a ecommerce site",
   "type": "module",
   "scripts": {
+    "nuke": "rimraf node_modules pnpm-lock.yaml && pnpm --recursive run clean && pnpm install",
     "dev:backend-node": "pnpm --filter backend dev:node",
     "dev:backend-ts": "pnpm --filter backend dev:ts",
+    "dev:user-front": "pnpm --filter user-frontend dev",
     "dev:shared": "pnpm --filter shared dev",
     "fullstakck-clean": "pnpm --recursive run clean",
     "backend-clean": "pnpm --filter backend clean",

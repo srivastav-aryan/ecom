@@ -1,10 +1,12 @@
 import { defineConfig } from "vitest/config";
-import { MongoMemoryServer } from "mongodb-memory-server";
+import { MongoMemoryReplSet } from "mongodb-memory-server";
 
-let mongoServer: MongoMemoryServer;
+let mongoServer: MongoMemoryReplSet;
 let uri;
 const settingUri = async () => {
-  mongoServer = await MongoMemoryServer.create();
+  mongoServer = await MongoMemoryReplSet.create({
+    replSet: {count: 1}
+    });
 
   uri = mongoServer.getUri();
 };
