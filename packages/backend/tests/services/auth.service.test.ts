@@ -6,7 +6,7 @@ import { ApiError } from "../../src/utilities/utilites";
 
 describe("AuthService.registetUser test", () => {
   it("it should register user and return tokens", async () => {
-    const input: userRegistrationInput = {
+     const input: userRegistrationInput = {
       firstname: "testUser",
       lastname: "surnametest",
       email: "test@gmail.com",
