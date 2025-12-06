@@ -71,7 +71,7 @@ export default class AuthServices {
     const { email, password } = input;
     logger?.info({ email }, "Login attempt");
 
-    const user = await UserServices.findUserByEmail(email, logger);
+    const user = await UserServices.findUserForLogin(email, logger);
 
     if (!user) {
       logger?.warn({ email }, "Login failed - user not found");

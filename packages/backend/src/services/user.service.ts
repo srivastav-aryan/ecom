@@ -7,13 +7,27 @@ import pino from "pino";
 export default class UserServices {
   static async findUserByEmail(
     email: string,
-    logger?: pino.Logger
+    logger?: pino.Logger,
   ): Promise<IUser | null> {
     logger?.debug({ email }, "Looking up user by email");
 
-    const user = await User.findOne({ email: email.toLowerCase() }).select(
-      "+password"
-    );
+    const user = await User.findOne({ email: email })
+
+    if (user) {
+      logger?.debug({ userId: user.id }, "User found by email");
+    } else {
+      logger?.debug({ email }, "No user found by email");
+    }
+
+    return user;
+  }
+
+  static async findUserForLogin(
+    email: string,
+    logger?: pino.Logger,
+  ): Promise<IUser | null> {
+    logger?.debug({ email }, "Looking up user by email for LOGIN");
+    const user = await User.findOne({ email: email }).select("+password");
 
     if (user) {
       logger?.debug({ userId: user.id }, "User found by email");
@@ -28,14 +42,14 @@ export default class UserServices {
     userId: string,
     refreshToken: string,
     logger?: pino.Logger,
-    options?: { session: mongoose.ClientSession }
+    options?: { session: mongoose.ClientSession },
   ): Promise<void> {
     logger?.debug({ userId }, "Updating refresh token in database");
 
     const updated = await User.findByIdAndUpdate(
       userId,
       { $set: { refreshToken }, $inc: { refreshTokenVersion: 1 } },
-      { session: options?.session }
+      { session: options?.session },
     );
 
     if (!updated) {
@@ -49,26 +63,26 @@ export default class UserServices {
   static async createUser(
     input: userRegistrationInput,
     logger?: pino.Logger,
-    options?: { session: mongoose.ClientSession }
+    options?: { session: mongoose.ClientSession },
   ): Promise<IUser> {
     const { email, lastname, firstname, password } = input;
 
     logger?.debug({ email }, "Checking if user already exists");
 
-    const userExists = await User.findOne(
-      { email },
-      null,
-      { session: options?.session }
-    );
+    const query = User.findOne({ email });
+    if (options?.session) {
+      query.session(options.session);
+    }
+    const userExists = await query;
 
     if (userExists) {
       logger?.warn(
         { email },
-        "Attempt to register with an already registered email"
+        "Attempt to register with an already registered email",
       );
       throw new ApiError(
         409,
-        "The email is already registered. Please login or use a new email"
+        "The email is already registered. Please login or use a new email",
       );
     }
 
@@ -82,7 +96,7 @@ export default class UserServices {
           lastname,
         },
       ],
-      { session: options?.session }
+      { session: options?.session },
     );
 
     logger?.info({ userId: newUser.id }, "New user created successfully");
