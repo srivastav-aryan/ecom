@@ -6,6 +6,6 @@ export const rootLoader = async (): Promise<NavigationData> => {
     const navData = await getNaviData();
     return navData;
   } catch (error: unknown) {
-    throw new Error("getNaviData erorr", error as Error);
+    throw new Error("getNaviData error", error as Error);
   }
 };

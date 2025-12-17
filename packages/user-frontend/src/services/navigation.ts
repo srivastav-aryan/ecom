@@ -11,6 +11,6 @@ export async function getNaviData(): Promise<NavigationData> {
     const data = await fetchClient("/nav", { timeOut: 4000 });
     return data;
   } catch (error: any) {
-    throw new Error("btich ass error", error);
+    throw new Error(" fetching nav data error", error);
   }
 }
