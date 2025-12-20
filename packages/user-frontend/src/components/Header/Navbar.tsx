@@ -19,12 +19,16 @@ function Navbar({ navItems }: NavProps) {
       <NavigationMenu className="mx-auto">
         <NavigationMenuList>
           {navItems.map((item) => (
-            <NavigationMenuItem key={item.label}>
+            <NavigationMenuItem key={item.id}>
               {item.hasMenu ? (
                 <>
-                  <NavigationMenuTrigger className="mx-5">{item.label}</NavigationMenuTrigger>
+                  <NavigationMenuTrigger className="mx-5">
+                    <NavigationMenuLink>
+                      <Link to={item.href}>{item.label}</Link>
+                    </NavigationMenuLink>
+                  </NavigationMenuTrigger>
 
-                  <NavigationMenuContent className="md:w-screen top-full md:fixed z-50 bg-popover text-popover-foreground border-b shadow-[0_8px_20px_rgba(0,0,0,0.08)] animate-in fade-in-0 slide-in-from-top-1 duration-200">
+                  <NavigationMenuContent className=" md:w-screen top-full md:fixed z-50 bg-popover text-popover-foreground border-b shadow-[0_8px_20px_rgba(0,0,0,0.08)] animate-in fade-in-0 slide-in-from-top-1 duration-200">
                     <div className="flex gap-16 py-8 justify-around">
                       {item.hasMenu.map((section) => (
                         <section key={section.name}>
@@ -38,7 +42,7 @@ function Navbar({ navItems }: NavProps) {
                                 >
                                   {link.label}
                                   {link.badge && (
-                                    <span className="ml-2 border-2 text-[0.7rem] rounded-full border-red-300 text-red-300 font-bold px-2 py-[1px]">
+                                    <span className="ml-2 border-2 text-[0.7rem] rounded-full border-red-300 text-red-300 font-bold px-2 py-px">
                                       {link.badge}
                                     </span>
                                   )}
@@ -53,10 +57,7 @@ function Navbar({ navItems }: NavProps) {
                 </>
               ) : (
                 <NavigationMenuLink asChild>
-                  <Link
-                    to={item.href || "#"}
-                    className="mx-5"
-                  >
+                  <Link to={item.href || "#"} className="mx-5">
                     {item.label}
                   </Link>
                 </NavigationMenuLink>
