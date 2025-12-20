@@ -1,8 +1,3 @@
-export interface MegamenuSection {
-  name: string;
-  items: MegamenuItem[];
-}
-
 export interface MegamenuItem {
   id: string;
   label: string;
@@ -10,6 +5,13 @@ export interface MegamenuItem {
   badge?: string;
 }
 
+// 3rd 
+export interface MegamenuSection {
+  name: string;
+  items: MegamenuItem[];
+}
+
+// 2nd 
 export interface NavigationItem {
   id: string;
   label: string;
@@ -17,6 +19,7 @@ export interface NavigationItem {
   hasMenu?: MegamenuSection[];
 }
 
+// outter most
 export interface NavigationData {
   navItems: NavigationItem[];
   lastUpdated?: string;

@@ -67,7 +67,7 @@ function Header({ navData }: HeaderProps) {
         </div>
 
         {/* Search bar — below logo on mobile, hidden on lg */}
-        <div className="mt-4 lg:hidden lg:mt-0 lg:absolute lg:left-1/2 lg:transform lg:-translate-x-1/2 lg:w-[40%] bg-red-400">
+        <div className="mt-4 lg:hidden lg:mt-0 lg:absolute lg:left-1/2 lg:transform lg:-translate-x-1/2 lg:w-[40%] ">
           <div className="relative w-full font-sans">
             {/* Search Icon */}
             <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
@@ -93,12 +93,14 @@ function Header({ navData }: HeaderProps) {
           </div>
         </div>
       </div>
-      {/* <div className="flex justify-center"> */}
-      {/*   <Navbar navItems={navData.navItems} /> */}
-      {/* <div> */}
+
       <Navbar navItems={navData.navItems} />
     </header>
   );
 }
 
 export default Header;
+
+
+// upper row header is not acessible no aria fields 
+//code duplication for the input 
