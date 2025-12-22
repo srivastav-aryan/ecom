@@ -23,9 +23,7 @@ function Navbar({ navItems }: NavProps) {
               {item.hasMenu ? (
                 <>
                   <NavigationMenuTrigger className="mx-5">
-                    <NavigationMenuLink>
                       <Link to={item.href}>{item.label}</Link>
-                    </NavigationMenuLink>
                   </NavigationMenuTrigger>
 
                   <NavigationMenuContent className=" md:w-screen top-full md:fixed z-50 bg-popover text-popover-foreground border-b shadow-[0_8px_20px_rgba(0,0,0,0.08)] animate-in fade-in-0 slide-in-from-top-1 duration-200">
