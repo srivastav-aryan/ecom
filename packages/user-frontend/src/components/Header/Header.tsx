@@ -1,7 +1,8 @@
-import { Heart,  ShoppingBasketIcon, User, Menu } from "lucide-react";
+import { Heart, ShoppingBasketIcon, User } from "lucide-react";
 import type { NavigationData } from "@e-com/shared/types";
 import Navbar from "./Navbar";
 import SearchInput from "./SearchInput";
+import MobileNav from "./MobileNav";
 
 interface HeaderProps {
   navData: NavigationData;
@@ -10,15 +11,11 @@ interface HeaderProps {
 function Header({ navData }: HeaderProps) {
   return (
     <header className="border-b-2 border-black">
-
-      {/* Top row */}
       <div className="px-4 sm:px-6 lg:px-11 py-4 ">
         <div className="flex items-center justify-between ">
-        
-          {/* Hamburger (only on mobile) */}
-          <button className="lg:hidden">
-            <Menu size={28} />
-          </button>
+          <div className="lg:hidden">
+            <MobileNav navItems={navData.navItems}/>
+          </div>
 
           {/* Logo */}
           <svg
