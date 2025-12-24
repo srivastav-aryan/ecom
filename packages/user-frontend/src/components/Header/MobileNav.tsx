@@ -9,6 +9,12 @@ import { Menu } from "lucide-react";
 import type { NavigationItem } from "@e-com/shared/types";
 import { Link } from "react-router-dom";
 import { useState } from "react";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 interface NavProps {
   navItems: NavigationItem[];
@@ -34,13 +40,13 @@ function MobileNav({ navItems }: NavProps) {
           <SheetTitle>ECOM</SheetTitle>
         </SheetHeader>
 
-        <div className="mt-4">
+        <div className="">
           {navItems.map((topItem) => {
             if (topItem.hasMenu) {
               return (
                 <div
                   key={topItem.id}
-                  className="py-2 px-4 cursor-pointer border-b flex justify-between"
+                  className="py-2 px-4 cursor-pointer border-b-2 border-blue-200 flex justify-between"
                   onClick={() => setActiveItem(topItem)}
                 >
                   <p>{topItem.label}</p>
@@ -51,7 +57,7 @@ function MobileNav({ navItems }: NavProps) {
               return (
                 <Link
                   key={topItem.id}
-                  className="py-2 px-4 cursor-pointer border-b  w-full block"
+                  className="py-2 px-4 cursor-pointer border-b-2 border-blue-200  w-full block"
                   to={topItem.href}
                 >
                   {topItem.label}
@@ -62,22 +68,40 @@ function MobileNav({ navItems }: NavProps) {
 
           <div
             className={`
-    absolute inset-0 bg-red-200 mt-14
+    absolute inset-0 bg-white mt-14
     transition-transform duration-300 ease-out
     ${open && activeItem ? "translate-x-0" : "translate-x-full"}
   `}
           >
             <button
-              className="py-3 bg-black text-white px-4"
+              className="py-1 mb-2 border-black border rounded-4xl  px-5"
               onClick={() => setActiveItem(null)}
             >
               ← Back
             </button>
 
             {activeItem?.hasMenu?.map((section) => (
-              <div key={section.name} className="flex-col">
-                <p>{section.name}</p>
-              </div>
+              <Accordion type="single" collapsible className="w-full">
+                <AccordionItem value={section.name}>
+                  <AccordionTrigger className="border-2">{section.name}</AccordionTrigger>
+                  <AccordionContent className="p-3 flex flex-col gap-4 text-balance">
+                    {section.items.map((list) => (
+                      <ul>
+                        <li>
+                          <Link to={list.href} className="text-gray-500">{list.label}</Link>
+                          {!list.badge ? (
+                            ""
+                          ) : (
+                            <span className="ml-2 border-2 text-[0.7rem] rounded-full border-red-300 text-red-300 font-bold px-2 py-px">
+                              {list.badge}
+                            </span>
+                          )}
+                        </li>
+                      </ul>
+                    ))}
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
             ))}
           </div>
         </div>
