@@ -15,7 +15,7 @@ interface NavProps {
 
 function Navbar({ navItems }: NavProps) {
   return (
-    <div className="relative hidden lg:block w-screen left-1/2 right-1/2 -translate-x-1/2 mt-2.5">
+    <div className="relative hidden lg:block  w-screen left-1/2 -translate-x-1/2 mt-2.5">
       <NavigationMenu className="mx-auto">
         <NavigationMenuList>
           {navItems.map((item) => (
