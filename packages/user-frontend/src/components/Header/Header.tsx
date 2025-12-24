@@ -37,15 +37,15 @@ function Header({ navData }: HeaderProps) {
             <SearchInput />
           </div>
 
-          <div className="flex gap-4">
-            <User size={30} />
-            <Heart size={30} />
-            <ShoppingBasketIcon size={30} />
+          <div className="flex gap-2 md:gap-4">
+            <User  className="h-7 w-7  md:h-8 md:w-8"/>
+            <Heart className="h-7 w-7  md:h-8 md:w-8" />
+            <ShoppingBasketIcon className="h-7 w-7  md:h-8 md:w-8"/>
           </div>
         </div>
 
         {/* Search bar — below logo on mobile, hidden on lg */}
-        <div className="relative w-full font-sans lg:hidden">
+        <div className="relative w-full mt-5 font-sans lg:hidden">
           <SearchInput />
         </div>
       </div>
@@ -57,4 +57,3 @@ function Header({ navData }: HeaderProps) {
 
 export default Header;
 
-// upper row header is not acessible no aria fields
