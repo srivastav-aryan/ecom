@@ -36,7 +36,7 @@ function MobileNav({ navItems }: NavProps) {
       <SheetTrigger>
         <Menu />
       </SheetTrigger>
-      <SheetContent side="left" className="bg-[rgb(28,28,28)] text-white overflow-hidden">
+      <SheetContent side="left" className="bg-[rgb(28,28,28)] w-screen text-white overflow-hidden">
         <SheetHeader className="border-b border-gray-600">
           <SheetTitle className="text-white">ECOM</SheetTitle>
         </SheetHeader>
