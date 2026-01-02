@@ -14,7 +14,7 @@ function SearchInput() {
         placeholder="Search..."
         className="
           w-full
-          py-2.5 pl-10 pr-4
+          py-1.5 md:py-2.5 pl-10 pr-4
           text-gray-900
           bg-white
           border border-gray-300
