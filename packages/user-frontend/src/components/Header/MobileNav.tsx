@@ -6,7 +6,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { FacebookIcon, InstagramIcon, Menu, TwitterIcon}from "lucide-react";
+import { FacebookIcon, InstagramIcon, Menu, TwitterIcon } from "lucide-react";
 import type { NavigationItem } from "@e-com/shared/types";
 import { Link } from "react-router-dom";
 import { useState } from "react";
@@ -36,7 +36,10 @@ function MobileNav({ navItems }: NavProps) {
       <SheetTrigger>
         <Menu />
       </SheetTrigger>
-      <SheetContent side="left" className="bg-[rgb(28,28,28)] w-screen text-white overflow-hidden">
+      <SheetContent
+        side="left"
+        className="bg-[rgb(28,28,28)] w-screen text-white overflow-hidden"
+      >
         <SheetHeader className="border-b border-gray-600">
           <SheetTitle className="text-white">ECOM</SheetTitle>
         </SheetHeader>
@@ -53,10 +56,8 @@ function MobileNav({ navItems }: NavProps) {
                   <p className="text-[1.3rem]">{topItem.label}</p>
                   <span className="text-white ">{">"}</span>
                 </div>
-
               );
-            }
-            else {
+            } else {
               return (
                 <Link
                   key={topItem.id}
@@ -67,7 +68,6 @@ function MobileNav({ navItems }: NavProps) {
                 </Link>
               );
             }
-
           })}
 
           <div
@@ -87,12 +87,16 @@ function MobileNav({ navItems }: NavProps) {
             {activeItem?.hasMenu?.map((section) => (
               <Accordion type="single" collapsible className="w-full">
                 <AccordionItem value={section.name} className=" ">
-                  <AccordionTrigger className="">{section.name}</AccordionTrigger>
+                  <AccordionTrigger className="">
+                    {section.name}
+                  </AccordionTrigger>
                   <AccordionContent className="p-3 flex flex-col gap-4 text-balance">
                     {section.items.map((list) => (
                       <ul>
                         <li>
-                          <Link to={list.href} className="text-gray-400 ">{list.label}</Link>
+                          <Link to={list.href} className="text-gray-400 ">
+                            {list.label}
+                          </Link>
                           {!list.badge ? (
                             ""
                           ) : (
@@ -111,11 +115,11 @@ function MobileNav({ navItems }: NavProps) {
         </div>
 
         <SheetFooter className="border-gray-600 border-y">
-        <div className=" flex justify-between">
-          <FacebookIcon className="h-5 w-5" />
-          <InstagramIcon className="h-5 w-5"/>
-          <TwitterIcon className="h-5 w-5"/>
-        </div>
+          <div className=" flex justify-between">
+            <FacebookIcon className="h-5 w-5" />
+            <InstagramIcon className="h-5 w-5" />
+            <TwitterIcon className="h-5 w-5" />
+          </div>
         </SheetFooter>
       </SheetContent>
     </Sheet>
