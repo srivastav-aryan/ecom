@@ -28,18 +28,14 @@ export interface RateLimiter {
   };
 }
 
-export const authControllerCreator = (deps: {
-  AuthServices: IAuthService;
-  loginLimitter: RateLimiter;
-}) => {
-  const { AuthServices, loginLimitter } = deps;
+export const authControllerCreator = (authServices: IAuthService, loginLimitter: RateLimiter) => {
   return {
     register: async (req: Request, res: Response, next: NextFunction) => {
       //@ts-ignore
       const logger = req.log.child({ route: "register" });
 
       try {
-        const { accessToken, refreshToken } = await AuthServices.registerUser(
+        const { accessToken, refreshToken } = await authServices.registerUser(
           req.body,
           logger
         );
@@ -81,7 +77,7 @@ export const authControllerCreator = (deps: {
           );
         }
 
-        const { accessToken, refreshToken } = await AuthServices.loginUser(
+        const { accessToken, refreshToken } = await authServices.loginUser(
           req.body,
           logger
         );

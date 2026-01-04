@@ -29,7 +29,7 @@ export default class AuthServices {
     return { accessToken, refreshToken };
   }
 
-  static async registerUser(
+  async registerUser(
     userInput: userRegistrationInput,
     logger?: pino.Logger
   ) {
@@ -45,7 +45,7 @@ export default class AuthServices {
       });
 
       logger?.debug({ userId: regUser.id }, "User created, generating tokens");
-      const tokens = await this._generateAndAssignToken(regUser, logger, {
+      const tokens = await AuthServices._generateAndAssignToken(regUser, logger, {
         session,
       });
 
@@ -66,7 +66,7 @@ export default class AuthServices {
     }
   }
 
-  static async loginUser(input: userLoginInput, logger?: pino.Logger) {
+  async loginUser(input: userLoginInput, logger?: pino.Logger) {
     // currently no transactions needed but can be added as future proofing or for a consistent pattern
     const { email, password } = input;
     logger?.info({ email }, "Login attempt");
@@ -86,6 +86,6 @@ export default class AuthServices {
 
     logger?.info({ userId: user.id }, "Login successful");
 
-    return this._generateAndAssignToken(user, logger);
+    return AuthServices._generateAndAssignToken(user, logger);
   }
 }
