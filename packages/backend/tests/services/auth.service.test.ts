@@ -1,8 +1,8 @@
 import { userLoginInput, userRegistrationInput } from "@e-com/shared/schemas";
 import AuthServices from "../../src/services/auth.service";
 import UserServices from "../../src/services/user.service";
-import { logger } from "../../src/utilities/logging";
-import { ApiError } from "../../src/utilities/utilites";
+import { logger } from "../../src/utils/logging.utils.js";
+import { ApiError } from "../../src/utils/applevel.utils.js";
 
 const authServices = new AuthServices()
 

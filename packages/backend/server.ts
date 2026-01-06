@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import { createApp } from "./src/app.js";
 import { connectDB } from "./src/config/dbconfig.js";
 import { env } from "./src/config/env.js";
-import { startGracefullShutdown } from "./src/utilities/utilites.js";
+import { startGracefullShutdown } from "./src/utils/applevel.utils.js";
 
 const startServer = async (): Promise<void> => {
   try {

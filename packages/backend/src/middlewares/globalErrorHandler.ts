@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { ZodError } from "zod";
-import { ApiError } from "../utilities/utilites.js";
+import { ApiError } from "../utils/applevel.utils.js";
 import { env } from "../config/env.js";
 
 // globall error handler

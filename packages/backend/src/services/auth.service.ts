@@ -1,6 +1,6 @@
 import { userLoginInput, userRegistrationInput } from "@e-com/shared/schemas";
 import UserServices from "./user.service.js";
-import { ApiError } from "../utilities/utilites.js";
+import { ApiError } from "../utils/applevel.utils.js";
 import { IUser } from "../models/user.model.js";
 import mongoose from "mongoose";
 import pino from "pino";

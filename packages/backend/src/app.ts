@@ -3,7 +3,7 @@ import helmet from "helmet";
 import { env } from "./config/env.js";
 import compression from "compression";
 import morgan from "morgan";
-import { logger } from "./utilities/logging.js";
+import { logger } from "./utils/logging.utils.js";
 import { randomUUID } from "node:crypto";
 import { authRouter } from "./routes/auth.routes.js";
 import { globalErrorHandler } from "./middlewares/globalErrorHandler.js";
