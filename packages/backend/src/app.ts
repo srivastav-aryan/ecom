@@ -8,33 +8,26 @@ import { randomUUID } from "node:crypto";
 import { authRouter } from "./routes/auth.routes.js";
 import { globalErrorHandler } from "./middlewares/globalErrorHandler.js";
 
-
 const setupMiddleWares = (app: express.Application): void => {
   app.use(
     helmet({
       contentSecurityPolicy: env.NODE_ENV == "development" ? false : undefined,
-    })
+    }),
   );
-
 
   app.use(compression());
 
   app.use((req: Request, res: Response, next: NextFunction) => {
-    //@ts-ignore
     req.id = randomUUID();
-    //@ts-ignore
-    req.log = logger.child({ reqId: req.id })
+    req.log = logger.child({ reqId: req.id });
 
     next();
   });
 
-
-
-
   if (env.NODE_ENV == "production") {
     morgan.token("user-id", (req) =>
-      // @ts-ignore
-      req.user?.id ? String(req.user.id) : "Guest"
+      //@ts-ignore
+      req.user?.id ? String(req.user.id) : "Guest",
     );
     //@ts-ignore
     morgan.token("req-id", (req) => req.id);
@@ -62,8 +55,8 @@ const setupMiddleWares = (app: express.Application): void => {
               }
             },
           },
-        }
-      )
+        },
+      ),
     );
   } else {
     app.use(morgan("dev"));
@@ -73,14 +66,14 @@ const setupMiddleWares = (app: express.Application): void => {
     express.json({
       limit: "10mb",
       type: "application/json",
-    })
+    }),
   );
 
   app.use(
     express.urlencoded({
       limit: "10mb",
       extended: true,
-    })
+    }),
   );
 };
 
@@ -98,13 +91,11 @@ export const createApp = (): express.Application => {
     });
   });
 
-
   // user endpoint for REST API
-  app.use("/api/user", authRouter)
+  app.use("/api/user", authRouter);
 
-
-  //global error handler 
-  app.use(globalErrorHandler)
+  //global error handler
+  app.use(globalErrorHandler);
 
   return app;
 };
