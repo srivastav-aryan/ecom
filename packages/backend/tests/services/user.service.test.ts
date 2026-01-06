@@ -4,6 +4,9 @@ import UserServices from "../../src/services/user.service";
 import { userRegistrationInput } from "@e-com/shared/schemas";
 import AuthServices from "../../src/services/auth.service";
 
+
+const authServices = new AuthServices()
+
 describe("User services test", () => {
   describe("find user by email", () => {
     it("it should return a user document from the db without the password field", async () => {
@@ -67,7 +70,7 @@ describe("User services test", () => {
         confirmPassword: "Test@123",
       };
 
-      const tokens = await AuthServices.registerUser(input);
+      const tokens = await authServices.registerUser(input);
 
       const registeredUser =
         await UserServices.findUserByEmail("test@gmail.com");
