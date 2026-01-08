@@ -10,6 +10,7 @@ import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import jwt, { Secret, SignOptions } from "jsonwebtoken";
 import { env } from "../config/env.js";
+import { AccessTokenPayload, RefreshTokenPayload } from "../utils/jwt.utils.js";
 
 export interface IUser extends Document {
   email: string;
@@ -212,11 +213,12 @@ userSchema.methods.generateAccessToken = function(): string {
     ? (env.ACCESS_TOKEN_EXPIRY as SignOptions["expiresIn"])
     : "15m";
 
-  return jwt.sign(
-    { _id: this._id, email: this.email, role: this.role },
-    secret,
-    { expiresIn: expiry },
-  );
+  const payload: AccessTokenPayload = {
+    _id: this._id,
+    email: this.email,
+    role: this.role,
+  };
+  return jwt.sign(payload, secret, { expiresIn: expiry });
 };
 
 userSchema.methods.generateRefreshToken = function(): string {
@@ -225,11 +227,12 @@ userSchema.methods.generateRefreshToken = function(): string {
     ? (env.REFRESH_TOKEN_EXPIRY as SignOptions["expiresIn"])
     : "7d";
 
-  return jwt.sign(
-    { _id: this._id, tokenVersion: this.refreshTokenVersion || 0 },
-    secret,
-    { expiresIn: expiry },
-  );
+  const payload: RefreshTokenPayload = {
+    _id: this._id,
+    tokenVersion: this.refreshTokenVersion || 0,
+  };
+
+  return jwt.sign(payload, secret, { expiresIn: expiry });
 };
 
 export const User: Model<IUser> = mongoose.model<IUser>("User", userSchema);

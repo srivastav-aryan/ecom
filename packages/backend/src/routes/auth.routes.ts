@@ -8,7 +8,7 @@ export const authRouter = express.Router();
 authRouter.post(
   "/register",
   validateReq(userRegistrationSchema),
-  authController.register
+  authController.registerController
 );
 
-authRouter.post("/login", validateReq(userLoginSchema), authController.login);
+authRouter.post("/login", validateReq(userLoginSchema), authController.loginController);
