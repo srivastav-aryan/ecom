@@ -3,6 +3,7 @@ import { IUser, User } from "../models/user.model.js";
 import { ApiError } from "../utils/applevel.utils.js";
 import mongoose from "mongoose";
 import pino from "pino";
+import bcrypt from "bcryptjs";
 
 export default class UserServices {
   static async findUserByEmail(
@@ -46,9 +47,11 @@ export default class UserServices {
   ): Promise<void> {
     logger?.debug({ userId }, "Updating refresh token in database");
 
+    const hashedRefToken = await bcrypt.hash(refreshToken, 12)
+
     const updated = await User.findByIdAndUpdate(
       userId,
-      { $set: { refreshToken }, $inc: { refreshTokenVersion: 1 } },
+      { $set: { refreshToken: hashedRefToken }, $inc: { refreshTokenVersion: 1 } },
       { session: options?.session },
     );
 
