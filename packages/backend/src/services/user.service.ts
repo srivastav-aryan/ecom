@@ -12,12 +12,30 @@ export default class UserServices {
   ): Promise<IUser | null> {
     logger?.debug({ email }, "Looking up user by email");
 
-    const user = await User.findOne({ email: email })
+    const user = await User.findOne({ email: email });
 
     if (user) {
       logger?.debug({ userId: user.id }, "User found by email");
     } else {
       logger?.debug({ email }, "No user found by email");
+    }
+
+    return user;
+  }
+
+  static async findUserByIdForAuth(
+    userId: string,
+    logger?: pino.Logger,
+  ): Promise<IUser | null> {
+    logger?.debug({ userId }, "Looking up user by ID for auth");
+    const user = await User.findById(userId).select(
+      "+refreshToken +refreshTokenVersion +password",
+    );
+
+    if (user) {
+      logger?.debug({ userId: user.id }, "User found by ID for auth");
+    } else {
+      logger?.debug({ userId }, "No user found by ID for auth");
     }
 
     return user;
@@ -47,11 +65,14 @@ export default class UserServices {
   ): Promise<void> {
     logger?.debug({ userId }, "Updating refresh token in database");
 
-    const hashedRefToken = await bcrypt.hash(refreshToken, 12)
+    const hashedRefToken = await bcrypt.hash(refreshToken, 12);
 
     const updated = await User.findByIdAndUpdate(
       userId,
-      { $set: { refreshToken: hashedRefToken }, $inc: { refreshTokenVersion: 1 } },
+      {
+        $set: { refreshToken: hashedRefToken },
+        $inc: { refreshTokenVersion: 1 },
+      },
       { session: options?.session },
     );
 
