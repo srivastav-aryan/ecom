@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { ZodError } from "zod";
 import { ApiError } from "../utils/applevel.utils.js";
 import { env } from "../config/env.js";
+import { JWTError } from "../utils/jwt.utils.js";
 
 // globall error handler
 export const globalErrorHandler = (
@@ -10,10 +11,10 @@ export const globalErrorHandler = (
   res: Response,
   next: NextFunction
 ) => {
-  // some code error programing error
   let statusCode = 500;
   let message = "Generic internal server error";
   let errors: any = undefined;
+  let code;
 
   if (err instanceof ApiError) {
     // for user errors
@@ -29,7 +30,11 @@ export const globalErrorHandler = (
       message: error.message,
     }));
   }
-  // add more type of errors later
+  else if (err instanceof JWTError){
+    statusCode = err.statusCode
+    message = err.message
+    code = err.code
+  }
 
   // log for debuging
   console.error(
@@ -40,6 +45,7 @@ export const globalErrorHandler = (
   res.status(statusCode).json({
     success: false,
     message,
+    code,
     ...(errors && { errors: errors }),
     ...(env.NODE_ENV === "development" ? { stack: err.stack } : {}),
   });
