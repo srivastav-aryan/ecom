@@ -5,6 +5,7 @@ import { IUser } from "../models/user.model.js";
 import mongoose from "mongoose";
 import pino from "pino";
 
+
 export default class AuthServices {
   private static async _generateAndAssignToken(
     user: IUser,
