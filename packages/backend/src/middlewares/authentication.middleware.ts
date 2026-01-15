@@ -13,14 +13,16 @@ export const authenticate = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
-    const accessToken = JwtServices.extractTokenFromHeader(req.headers.authorization);
+    const logger = req.log
+
+    const accessToken = JwtServices.extractTokenFromHeader(req.headers.authorization, logger);
   
 
     if (!accessToken) {
       throw new JWTError("Access token not provided", JWT_ERROR_CODES.NO_TOKEN);
     }
 
-    const decoded = JwtServices.verifyAccessToken(accessToken);
+    const decoded = JwtServices.verifyAccessToken(accessToken, logger);
 
     req.user = {
       _id: new Types.ObjectId(decoded._id),
