@@ -3,7 +3,7 @@ import { IUser, User } from "../models/user.model.js";
 import { ApiError } from "../utils/applevel.utils.js";
 import mongoose from "mongoose";
 import pino from "pino";
-import bcrypt from "bcryptjs";
+import crypto from "crypto";
 
 export default class UserServices {
   static async findUserByEmail(
@@ -29,7 +29,7 @@ export default class UserServices {
   ): Promise<IUser | null> {
     logger?.debug({ userId }, "Looking up user by ID for auth");
     const user = await User.findById(userId).select(
-      "+refreshToken +refreshTokenVersion +password",
+      "+refreshToken +refreshTokenVersion +password +isActive",
     );
 
     if (user) {
@@ -65,7 +65,7 @@ export default class UserServices {
   ): Promise<void> {
     logger?.debug({ userId }, "Updating refresh token in database");
 
-    const hashedRefToken = await bcrypt.hash(refreshToken, 12);
+    const hashedRefToken = crypto.createHash("sha256").update(refreshToken).digest("hex");
 
     const updated = await User.findByIdAndUpdate(
       userId,

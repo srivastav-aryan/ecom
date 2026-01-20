@@ -1,4 +1,3 @@
-import bcrypt from "bcryptjs";
 import { AccessTokenPayload, RefreshTokenPayload } from "../utils/jwt.utils";
 import jwt, { } from "jsonwebtoken";
 import { env } from "../config/env.js";
@@ -7,6 +6,7 @@ import { JWT_ERROR_CODES } from "../utils/jwt.utils";
 import { IUser } from "../models/user.model";
 import UserServices from "./user.service";
 import pino from "pino";
+import crypto from "crypto";
 
 export default class JwtServices {
   static verifyAccessToken = (token: string, logger?: pino.Logger): AccessTokenPayload => {
@@ -87,7 +87,11 @@ export default class JwtServices {
         );
       }
 
-      const tokenMatch = bcrypt.compare(token, userOfToken.refreshToken || "");
+      const hashedToken = crypto.createHash("sha256")
+        .update(token)
+        .digest("hex");
+
+      const tokenMatch = hashedToken === (userOfToken.refreshToken || "");
 
       if (!tokenMatch) {
         logger?.warn({ decoded }, "Provided ref token does not match");
