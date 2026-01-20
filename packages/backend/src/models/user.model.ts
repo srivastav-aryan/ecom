@@ -92,7 +92,7 @@ const userSchema = new Schema<IUser>(
         "Invalid phone number format (10-15 digits expected)",
       ],
       unique: true,
-      default: null,
+      sparse: true,
     },
     addresses: {
       type: [String],
@@ -174,8 +174,8 @@ const userSchema = new Schema<IUser>(
 userSchema.pre("save", async function(next) {
   if (!this.isModified("password")) return next();
 
-  this.password = await bcrypt.hash(this.password, 12);
-  next();
+    this.password = await bcrypt.hash(this.password, 12);
+    next();
 });
 
 userSchema.methods.isPasswordCorrect = async function(

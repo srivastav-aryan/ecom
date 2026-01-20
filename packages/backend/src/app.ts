@@ -21,6 +21,8 @@ const setupMiddleWares = (app: express.Application): void => {
     req.id = randomUUID();
     req.log = logger.child({ reqId: req.id });
 
+    req.log.info({ method: req.method, url: req.url }, "Incoming Request");
+
     next();
   });
 
