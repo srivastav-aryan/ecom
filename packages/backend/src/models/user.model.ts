@@ -27,14 +27,14 @@ export interface IUser extends Document {
   passwordResetToken?: string;
   passwordResetExpires?: Date;
   refreshToken?: string;
-  refreshTokenVersion?: Number;
+  refreshTokenVersion: number;
 
   cart: Schema.Types.ObjectId;
   wishlist: Schema.Types.ObjectId;
   reviews: Schema.Types.ObjectId;
   orderHistory: Schema.Types.ObjectId;
 
-  isActive?: boolean;
+  isActive: boolean;
   createdAt?: Date;
   updatedAt?: Date;
 
