@@ -1,15 +1,21 @@
-import { AccessTokenPayload, RefreshTokenPayload } from "../utils/jwt.utils";
-import jwt, { } from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 import { env } from "../config/env.js";
-import { JWTError } from "../utils/jwt.utils";
-import { JWT_ERROR_CODES } from "../utils/jwt.utils";
+import {
+  AccessTokenPayload,
+  RefreshTokenPayload,
+  JWT_ERROR_CODES,
+  JWTError,
+} from "../utils/jwt.utils.js";
 import { IUser } from "../models/user.model";
-import UserServices from "./user.service";
 import pino from "pino";
 import crypto from "crypto";
+import { userSession, IUserSession } from "../models/userSession.model.js";
 
 export default class JwtServices {
-  static verifyAccessToken = (token: string, logger?: pino.Logger): AccessTokenPayload => {
+  static verifyAccessToken = (
+    token: string,
+    logger?: pino.Logger,
+  ): AccessTokenPayload => {
     try {
       logger?.info({ token }, "Verifying access token");
       logger?.debug({ token }, "Decoding access token");
@@ -56,8 +62,12 @@ export default class JwtServices {
 
   static verifyRefreshToken = async (
     token: string,
-    logger?: pino.Logger
-  ): Promise<{ decoded: RefreshTokenPayload; userOfToken: IUser }> => {
+    logger?: pino.Logger,
+  ): Promise<{
+    decoded: RefreshTokenPayload;
+    userOfToken: IUser;
+    session: Omit<IUserSession, "userId"> & { userId: IUser };
+  }> => {
     try {
       logger?.info({ token }, "Verifying refresh token");
       logger?.debug({ token }, "Decoding refresh token");
@@ -68,7 +78,7 @@ export default class JwtServices {
 
       logger?.debug({ decoded }, "Decoded refresh token");
 
-      if (!decoded._id || !decoded.tokenVersion) {
+      if (!decoded._id) {
         throw new JWTError(
           "missing claims in the token",
           JWT_ERROR_CODES.MALFORMED,
@@ -77,7 +87,33 @@ export default class JwtServices {
 
       logger?.debug({ decoded }, "Refresh token verified");
 
-      const userOfToken = await UserServices.findUserByIdForAuth(decoded._id);
+      const hashedToken = crypto
+        .createHash("sha256")
+        .update(token)
+        .digest("hex");
+
+      // decission pending probally will need to create a separate session service
+
+      const session = await userSession
+        .findOne({ refreshTokenHash: hashedToken })
+        .populate<{ userId: IUser }>("userId");
+
+      if (session === null) {
+        // nuke logout later beacuse this means the session could be comporomised
+        logger?.warn(
+          { decoded },
+          "no such session found with this refresh token",
+        );
+        throw new JWTError("Session invalid", JWT_ERROR_CODES.INVALID);
+      }
+
+      if (!session.isValid) {
+        // nuke logout later beacuse this means the session could be comporomised
+        logger?.warn({ userId: decoded._id }, "Session marked as invalid");
+        throw new JWTError("Session invalid", JWT_ERROR_CODES.INVALID);
+      }
+
+      const userOfToken = session.userId;
 
       if (userOfToken == null) {
         logger?.warn({ decoded }, "Invalid token no such user found");
@@ -87,21 +123,11 @@ export default class JwtServices {
         );
       }
 
-      const hashedToken = crypto.createHash("sha256")
-        .update(token)
-        .digest("hex");
-
-      const tokenMatch = hashedToken === (userOfToken.refreshToken || "");
-
-      if (!tokenMatch) {
-        logger?.warn({ decoded }, "Provided ref token does not match");
-        throw new JWTError(
-          "provided ref token does not match",
-          JWT_ERROR_CODES.INVALID,
-        );
+      if (new Date() > session.expiresAt) {
+        throw new JWTError("Session expired", JWT_ERROR_CODES.EXPIRED);
       }
 
-      return { decoded, userOfToken };
+      return { decoded, userOfToken, session };
     } catch (error) {
       if (error instanceof jwt.TokenExpiredError) {
         logger?.warn({ token }, "Refresh token is expired");
@@ -132,7 +158,10 @@ export default class JwtServices {
     }
   };
 
-  static extractTokenFromHeader(authHeader?: string, logger?: pino.Logger): string | null {
+  static extractTokenFromHeader(
+    authHeader?: string,
+    logger?: pino.Logger,
+  ): string | null {
     if (!authHeader) {
       logger?.warn({ authHeader }, "No auth header provided");
       return null;
@@ -151,7 +180,7 @@ export default class JwtServices {
   static extractRefreshToken = (
     cookies?: Record<string, string>,
     body?: any,
-    logger?: pino.Logger
+    logger?: pino.Logger,
   ): string | null => {
     return cookies?.refreshToken || body?.refreshToken || null;
   };

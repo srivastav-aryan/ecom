@@ -15,6 +15,7 @@ import { AccessTokenPayload, RefreshTokenPayload } from "../utils/jwt.utils.js";
 export interface IUser extends Document {
   email: string;
   password: string;
+  passwordChangedAt: Date;
   firstname: string;
   lastname: string;
   role: UserRole;
@@ -26,14 +27,12 @@ export interface IUser extends Document {
   emailVerificationExpires?: Date;
   passwordResetToken?: string;
   passwordResetExpires?: Date;
-  refreshToken?: string;
-  refreshTokenVersion: number;
 
   cart: Schema.Types.ObjectId;
   wishlist: Schema.Types.ObjectId;
   reviews: Schema.Types.ObjectId;
   orderHistory: Schema.Types.ObjectId;
-
+  isDeleted: boolean
   isActive: boolean;
   createdAt?: Date;
   updatedAt?: Date;
@@ -113,16 +112,6 @@ const userSchema = new Schema<IUser>(
       select: false,
     },
 
-    refreshToken: {
-      type: String,
-      select: false,
-    },
-
-    refreshTokenVersion: {
-      type: Number,
-      default: 0,
-      select: false,
-    },
 
     passwordResetToken: {
       type: String,
@@ -174,6 +163,7 @@ const userSchema = new Schema<IUser>(
 userSchema.pre("save", async function(next) {
   if (!this.isModified("password")) return next();
 
+    this.passwordChangedAt = new Date() 
     this.password = await bcrypt.hash(this.password, 12);
     next();
 });
@@ -229,7 +219,6 @@ userSchema.methods.generateRefreshToken = function(): string {
 
   const payload: RefreshTokenPayload = {
     _id: this._id,
-    tokenVersion: this.refreshTokenVersion || 0,
   };
 
   return jwt.sign(payload, secret, { expiresIn: expiry });

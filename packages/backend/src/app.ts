@@ -7,6 +7,7 @@ import { logger } from "./utils/logging.utils.js";
 import { randomUUID } from "node:crypto";
 import { authRouter } from "./routes/auth.routes.js";
 import { globalErrorHandler } from "./middlewares/globalErrorHandler.js";
+import cookieParser from "cookie-parser";
 
 const setupMiddleWares = (app: express.Application): void => {
   app.use(
@@ -63,6 +64,9 @@ const setupMiddleWares = (app: express.Application): void => {
   } else {
     app.use(morgan("dev"));
   }
+
+
+  app.use(cookieParser())
 
   app.use(
     express.json({

@@ -2,7 +2,6 @@ import { Permission, UserRole } from "@e-com/shared/types";
 
 export interface AuthCacheEntry{
   role: UserRole,
-  refreshTokenVersion: number | undefined,
   permissions: Permission[]
   isActive: boolean,
   expiresAt: number

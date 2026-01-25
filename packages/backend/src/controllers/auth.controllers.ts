@@ -5,6 +5,8 @@ import pino from "pino";
 import { env } from "../config/env.js";
 import { ApiError } from "../utils/applevel.utils.js";
 import { userLoginInput, userRegistrationInput } from "@e-com/shared/schemas";
+import JwtServices from "../services/jwt.service.js";
+import AuthServices from "../services/auth.service.js";
 
 export interface IAuthService {
   registerUser: (
@@ -15,6 +17,10 @@ export interface IAuthService {
     input: userLoginInput,
     logger: pino.Logger
   ) => Promise<{ accessToken: string; refreshToken: string }>;
+  
+  refreshService: (reftoken: any , logger?: any)=> Promise<{ accessToken: string; refreshToken: string }>;
+
+
 }
 
 export interface RateLimiter {
@@ -93,12 +99,43 @@ export const authControllerCreator = (authServices: IAuthService, loginLimitter:
 
         res.status(200).json({
           success: true,
-          data: { accessToken },
+          // just sending the reftoken for now testing the refresh endpoint soo remove this later
+          data: { accessToken, refreshToken },
           message: "User logged in successfully",
         });
       } catch (error) {
         next(error);
       }
     },
-  };
+    
+    refreshController: async (req: Request, res: Response , next: NextFunction) => {
+      const logger = req.log.child({ route: "refresh_token" });
+      try {
+       const refToken = JwtServices.extractRefreshToken(req.cookies, req.body)  
+       if (!refToken) {
+        throw new ApiError(401, "Refresh Token not provided") 
+       }
+
+       const {accessToken, refreshToken} = await authServices.refreshService(refToken, logger)
+       
+       res.cookie("refreshToken", refreshToken, {
+        httpOnly: true,
+        secure: env.NODE_ENV === "production",
+        sameSite: "strict",
+        path: "/auth/refresh",
+        maxAge:
+           7 * 24 * 60 * 60 * 1000,
+      });
+
+      res.status(200).json({
+        success: true,
+        data: { accessToken },
+        message: "User logged in successfully",
+      });
+
+      } catch (error) {
+        next(error)
+      }
+  },
+};
 };

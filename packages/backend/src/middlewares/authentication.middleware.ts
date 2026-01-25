@@ -41,7 +41,6 @@ export const authenticate = async (
         role: user.role,
         isActive: user.isActive,
         permissions: user.permissions,
-        refreshTokenVersion: user.refreshTokenVersion,
         expiresAt: Date.now() + auth_cache_TTL,
       });
 

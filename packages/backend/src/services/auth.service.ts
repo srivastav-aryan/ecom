@@ -4,6 +4,7 @@ import { ApiError } from "../utils/applevel.utils.js";
 import { IUser } from "../models/user.model.js";
 import mongoose from "mongoose";
 import pino from "pino";
+import JwtServices from "./jwt.service.js";
 
   
 export default class AuthServices {
@@ -40,7 +41,7 @@ export default class AuthServices {
     session.startTransaction({ writeConcern: { w: "majority" } });
 
     try {
-      logger?.debug("Creating user in database");
+      logger?.debug("starting the process for creating user in database");
       const regUser = await UserServices.createUser(userInput, logger, {
         session,
       });
@@ -88,5 +89,15 @@ export default class AuthServices {
     logger?.info({ userId: user.id }, "Login successful");
 
     return AuthServices._generateAndAssignToken(user, logger);
+  }
+
+  async refreshService (oldRefToken: any, logger?: any){
+    const { decoded, userOfToken , session} = await JwtServices.verifyRefreshToken(oldRefToken , logger)
+
+        await session.deleteOne();
+
+       return await AuthServices._generateAndAssignToken(userOfToken)
+
+       
   }
 }

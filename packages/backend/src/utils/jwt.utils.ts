@@ -9,7 +9,6 @@ export interface AccessTokenPayload extends JwtPayload {
 
 export interface RefreshTokenPayload extends JwtPayload {
   _id: string;
-  tokenVersion: number;
 }
 
 export const JWT_ERROR_CODES = {
