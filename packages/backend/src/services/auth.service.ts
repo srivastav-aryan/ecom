@@ -1,14 +1,20 @@
 import { userLoginInput, userRegistrationInput } from "@e-com/shared/schemas";
-import UserServices from "./user.service.js";
 import { ApiError } from "../utils/applevel.utils.js";
 import { IUser } from "../models/user.model.js";
 import mongoose from "mongoose";
 import pino from "pino";
-import { TokenService } from "./token.service.js";
-import { SessionService } from "./session.service.js";
+import { TokenServiceInterface } from "../interfaces/services/token.service.interface.js";
+import { SessionServiceInterface } from "../interfaces/services/session.service.interface.js";
+import { UserServiceInterface } from "../interfaces/services/user.service.interface.js";
 
 export default class AuthServices {
-  private static async _generateTokenAndAssignSession(
+  constructor(
+    private userServices: UserServiceInterface,
+    private sessionService: SessionServiceInterface,
+    private tokenService: TokenServiceInterface,
+  ) {}
+
+  private async _generateTokenAndAssignSession(
     user: IUser,
     logger?: pino.Logger,
     options?: { session: mongoose.ClientSession },
@@ -18,17 +24,17 @@ export default class AuthServices {
       "starting the process of token generation for this user",
     );
 
-    const accessToken = TokenService.generateAccessToken({
+    const accessToken = this.tokenService.generateAccessToken({
       _id: user.id,
       email: user.email,
       role: user.role,
     });
     logger?.debug({ userId: user.id }, "access token generated");
 
-    const refreshToken = TokenService.generateRefreshToken({ _id: user.id });
+    const refreshToken = this.tokenService.generateRefreshToken({ _id: user.id });
     logger?.debug({ userId: user.id }, "refresh token generated");
 
-    await SessionService.createSession(user.id, refreshToken);
+    await this.sessionService.createSession(user.id, refreshToken, logger);
 
     return { accessToken, refreshToken };
   }
@@ -41,17 +47,15 @@ export default class AuthServices {
 
     try {
       logger?.debug("starting the process for creating user in database");
-      const regUser = await UserServices.createUser(userInput, logger, {
+      const regUser = await this.userServices.createUser(userInput, logger, {
         session,
       });
 
       logger?.debug({ userId: regUser.id }, "User created, generating tokens");
-      const tokens = await AuthServices._generateTokenAndAssignSession(
+      const tokens = await this._generateTokenAndAssignSession(
         regUser,
         logger,
-        {
-          session,
-        },
+        { session },
       );
 
       await session.commitTransaction();
@@ -72,11 +76,10 @@ export default class AuthServices {
   }
 
   async loginUser(input: userLoginInput, logger?: pino.Logger) {
-    // currently no transactions needed but can be added as future proofing or for a consistent pattern
     const { email, password } = input;
     logger?.info({ email }, "Login attempt");
 
-    const user = await UserServices.findUserForLogin(email, logger);
+    const user = await this.userServices.findUserForLogin(email, logger);
 
     if (!user) {
       logger?.warn({ email }, "Login failed - user not found");
@@ -91,19 +94,15 @@ export default class AuthServices {
 
     logger?.info({ userId: user.id }, "Login successful");
 
-    return AuthServices._generateTokenAndAssignSession(user, logger);
+    return this._generateTokenAndAssignSession(user, logger);
   }
 
   async refreshService(oldRefToken: string, logger?: pino.Logger) {
-    const { decoded } = await TokenService.verifyRefreshToken(
-      oldRefToken,
-      logger,
-    );
+    const { decoded } = this.tokenService.verifyRefreshToken(oldRefToken, logger);
 
-    const session = await SessionService.findSessionByToken(oldRefToken);
+    const session = await this.sessionService.findSessionByToken(oldRefToken);
 
     if (!session) {
-      // nuke log out add later
       logger?.warn(
         { userId: decoded._id },
         "Refresh failed: Session not found (Possible Reuse)",
@@ -111,7 +110,6 @@ export default class AuthServices {
       throw new ApiError(401, "Invalid Session");
     }
     if (!session.isValid || new Date() > session.expiresAt) {
-      // nuke log out add later
       logger?.warn(
         { sessionId: session._id },
         "Refresh failed: Session expired or invalid",
@@ -119,12 +117,13 @@ export default class AuthServices {
       throw new ApiError(401, "Session Expired");
     }
 
-    const user = await UserServices.findUserByIdForAuth(decoded._id);
+    const user = await this.userServices.findUserByIdForAuth(decoded._id, logger);
 
     if (!user) throw new ApiError(401, "User not found");
 
-    await SessionService.revokeSession(session.id);
+    await this.sessionService.revokeSession(session.id);
 
-    return await AuthServices._generateTokenAndAssignSession(user, logger);
+    return await this._generateTokenAndAssignSession(user, logger);
   }
 }
+

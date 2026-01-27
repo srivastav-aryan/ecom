@@ -1,61 +1,30 @@
 import { env } from "../config/env.js";
-import jwt, { JwtPayload, Secret, SignOptions } from "jsonwebtoken";
-import { UserRole } from "@e-com/shared/types";
+import jwt, { Secret, SignOptions } from "jsonwebtoken";
 import pino from "pino";
+import {
+  AccessTokenPayload,
+  RefreshTokenPayload,
+  JWT_ERROR_CODES,
+  JWTError,
+  TokenServiceInterface,
+} from "../interfaces/services/token.service.interface.js";
 
-export interface AccessTokenPayload extends JwtPayload {
-  _id: string;
-  email: string;
-  role: UserRole;
-}
-
-export interface RefreshTokenPayload extends JwtPayload {
-  _id: string;
-}
-
-export const JWT_ERROR_CODES = {
-  EXPIRED: "EXPIRED",
-  INVALID: "INVALID",
-  MALFORMED: "MALFORMED",
-  NO_TOKEN: "NO_TOKEN",
-  MISSING_CLAIMS: "MISSING_CLAIMS",
-  VERSION_MISMATCH: "VERSION_MISMATCH",
-} as const;
-
-export type JWTErrorCode =
-  (typeof JWT_ERROR_CODES)[keyof typeof JWT_ERROR_CODES];
-
-export class JWTError extends Error {
-  constructor(
-    message: string,
-    public readonly code: JWTErrorCode,
-    public readonly isOperational: boolean = true,
-    public readonly statusCode: number = 401,
-  ) {
-    super(message);
-    this.name = "JWTError";
-    Error.captureStackTrace(this, this.constructor);
-  }
-}
 
 // --------- SERVICE CLASS-------
-export class TokenService {
-  static generateAccessToken(payload: AccessTokenPayload): string {
+export class TokenService implements TokenServiceInterface {
+  generateAccessToken(payload: AccessTokenPayload): string {
     return jwt.sign({ ...payload }, env.ACCESS_TOKEN_SECRET as Secret, {
       expiresIn: (env.ACCESS_TOKEN_EXPIRY || "15m") as SignOptions["expiresIn"],
     });
   }
 
-  static generateRefreshToken(payload: RefreshTokenPayload): string {
+  generateRefreshToken(payload: RefreshTokenPayload): string {
     return jwt.sign({ ...payload }, env.REFRESH_TOKEN_SECRET as Secret, {
       expiresIn: env.REFRESH_TOKEN_EXPIRY as SignOptions["expiresIn"],
     });
   }
 
-  static verifyAccessToken = (
-    token: string,
-    logger?: pino.Logger,
-  ): AccessTokenPayload => {
+  verifyAccessToken(token: string, logger?: pino.Logger): AccessTokenPayload {
     try {
       logger?.info({ token }, "Verifying access token");
       logger?.debug({ token }, "Decoding access token");
@@ -98,17 +67,14 @@ export class TokenService {
         JWT_ERROR_CODES.MALFORMED,
       );
     }
-  };
+  }
 
-  static verifyRefreshToken = async (
-    token: string,
-    logger?: pino.Logger,
-  ): Promise<{
+  verifyRefreshToken(token: string, logger?: pino.Logger): {
     decoded: RefreshTokenPayload;
-  }> => {
+  } {
     try {
-      logger?.info("Verifying refresh token");
-      logger?.debug("Decoding refresh token");
+      logger?.info({ token }, "Verifying refresh token");
+      logger?.debug({ token }, "Decoding refresh token");
       const decoded = jwt.verify(
         token,
         env.REFRESH_TOKEN_SECRET,
@@ -154,9 +120,9 @@ export class TokenService {
         JWT_ERROR_CODES.MALFORMED,
       );
     }
-  };
+  }
 
-  static extractTokenFromHeader(
+  extractTokenFromHeader(
     authHeader?: string,
     logger?: pino.Logger,
   ): string | null {
@@ -175,11 +141,12 @@ export class TokenService {
     return parts[1];
   }
 
-  static extractRefreshToken = (
+  extractRefreshToken(
     cookies?: Record<string, string>,
     body?: any,
     logger?: pino.Logger,
-  ): string | null => {
+  ): string | null {
     return cookies?.refreshToken || body?.refreshToken || null;
-  };
+  }
 }
+

@@ -2,9 +2,10 @@ import mongoose from "mongoose";
 import pino from "pino";
 import crypto from "crypto";
 import { userSession, IUserSession } from "../models/userSession.model.js";
+import { SessionServiceInterface } from "../interfaces/services/session.service.interface.js";
 
-export class SessionService {
-  static async createSession(
+export class SessionService implements SessionServiceInterface {
+  async createSession(
     userId: string,
     refreshToken: string,
     logger?: pino.Logger,
@@ -33,7 +34,7 @@ export class SessionService {
     logger?.debug({ userId }, "session created for this user");
   }
 
-  static async findSessionByToken(
+  async findSessionByToken(
     refreshToken: string
   ): Promise<IUserSession | null> {
     const hash = crypto
@@ -43,7 +44,7 @@ export class SessionService {
     return userSession.findOne({ refreshTokenHash: hash });
   }
 
-  static async revokeSession (sessionId: string) {
-    await userSession.findByIdAndDelete( sessionId)
+  async revokeSession(sessionId: string) {
+    await userSession.findByIdAndDelete(sessionId);
   }
 }

@@ -4,21 +4,21 @@ import pino from "pino";
 import { env } from "../config/env.js";
 import { ApiError } from "../utils/applevel.utils.js";
 import { userLoginInput, userRegistrationInput } from "@e-com/shared/schemas";
-import { TokenService } from "../services/token.service.js";
+import { TokenServiceInterface } from "../interfaces/services/token.service.interface.js";
 
 export interface IAuthService {
   registerUser: (
     input: userRegistrationInput,
-    logger: pino.Logger
+    logger?: pino.Logger
   ) => Promise<{ accessToken: string; refreshToken: string }>;
   loginUser: (
     input: userLoginInput,
-    logger: pino.Logger
+    logger?: pino.Logger
   ) => Promise<{ accessToken: string; refreshToken: string }>;
-  
-  refreshService: (reftoken: any , logger?: any)=> Promise<{ accessToken: string; refreshToken: string }>;
-
-
+  refreshService: (
+    reftoken: string,
+    logger?: pino.Logger
+  ) => Promise<{ accessToken: string; refreshToken: string }>;
 }
 
 export interface RateLimiter {
@@ -32,7 +32,11 @@ export interface RateLimiter {
   };
 }
 
-export const authControllerCreator = (authServices: IAuthService, loginLimitter: RateLimiter) => {
+export const authControllerCreator = (
+  authServices: IAuthService,
+  loginLimiter: RateLimiter,
+  tokenService: TokenServiceInterface,
+) => {
   return {
     registerController: async (req: Request, res: Response, next: NextFunction) => {
       //@ts-ignore
@@ -68,7 +72,7 @@ export const authControllerCreator = (authServices: IAuthService, loginLimitter:
       try {
         const { email } = req.body;
 
-        const result = loginLimitter.checkRateLimit(
+        const result = loginLimiter.checkRateLimit(
           email || req.ip,
           logger.child({ email })
         );
@@ -109,7 +113,7 @@ export const authControllerCreator = (authServices: IAuthService, loginLimitter:
     refreshController: async (req: Request, res: Response , next: NextFunction) => {
       const logger = req.log.child({ route: "refresh_token" });
       try {
-       const oldRefToken = TokenService.extractRefreshToken(req.cookies, req.body)  
+       const oldRefToken = tokenService.extractRefreshToken(req.cookies, req.body, logger);
          if (!oldRefToken) {
         throw new ApiError(401, "Refresh Token not provided") 
        }

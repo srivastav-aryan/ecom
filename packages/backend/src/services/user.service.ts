@@ -3,9 +3,10 @@ import { IUser, User } from "../models/user.model.js";
 import { ApiError } from "../utils/applevel.utils.js";
 import mongoose from "mongoose";
 import pino from "pino";
+import { UserServiceInterface } from "../interfaces/services/user.service.interface.js";
 
-export default class UserServices {
-  static async findUserByEmail(
+export default class UserServices implements UserServiceInterface {
+  async findUserByEmail(
     email: string,
     logger?: pino.Logger,
   ): Promise<IUser | null> {
@@ -22,7 +23,7 @@ export default class UserServices {
     return user;
   }
 
-  static async findUserByIdForAuth(
+  async findUserByIdForAuth(
     userId: string,
     logger?: pino.Logger,
   ): Promise<IUser | null> {
@@ -40,7 +41,7 @@ export default class UserServices {
     return user;
   }
 
-  static async findUserForLogin(
+  async findUserForLogin(
     email: string,
     logger?: pino.Logger,
   ): Promise<IUser | null> {
@@ -56,7 +57,7 @@ export default class UserServices {
     return user;
   }
 
-  static async createUser(
+  async createUser(
     input: userRegistrationInput,
     logger?: pino.Logger,
     options?: { session: mongoose.ClientSession },
