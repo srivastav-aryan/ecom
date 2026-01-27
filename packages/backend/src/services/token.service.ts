@@ -1,17 +1,57 @@
-import jwt from "jsonwebtoken";
 import { env } from "../config/env.js";
-import {
-  AccessTokenPayload,
-  RefreshTokenPayload,
-  JWT_ERROR_CODES,
-  JWTError,
-} from "../utils/jwt.utils.js";
-import { IUser } from "../models/user.model";
+import jwt, { JwtPayload, Secret, SignOptions } from "jsonwebtoken";
+import { UserRole } from "@e-com/shared/types";
 import pino from "pino";
-import crypto from "crypto";
-import { userSession, IUserSession } from "../models/userSession.model.js";
 
-export default class JwtServices {
+export interface AccessTokenPayload extends JwtPayload {
+  _id: string;
+  email: string;
+  role: UserRole;
+}
+
+export interface RefreshTokenPayload extends JwtPayload {
+  _id: string;
+}
+
+export const JWT_ERROR_CODES = {
+  EXPIRED: "EXPIRED",
+  INVALID: "INVALID",
+  MALFORMED: "MALFORMED",
+  NO_TOKEN: "NO_TOKEN",
+  MISSING_CLAIMS: "MISSING_CLAIMS",
+  VERSION_MISMATCH: "VERSION_MISMATCH",
+} as const;
+
+export type JWTErrorCode =
+  (typeof JWT_ERROR_CODES)[keyof typeof JWT_ERROR_CODES];
+
+export class JWTError extends Error {
+  constructor(
+    message: string,
+    public readonly code: JWTErrorCode,
+    public readonly isOperational: boolean = true,
+    public readonly statusCode: number = 401,
+  ) {
+    super(message);
+    this.name = "JWTError";
+    Error.captureStackTrace(this, this.constructor);
+  }
+}
+
+// --------- SERVICE CLASS-------
+export class TokenService {
+  static generateAccessToken(payload: AccessTokenPayload): string {
+    return jwt.sign({ ...payload }, env.ACCESS_TOKEN_SECRET as Secret, {
+      expiresIn: (env.ACCESS_TOKEN_EXPIRY || "15m") as SignOptions["expiresIn"],
+    });
+  }
+
+  static generateRefreshToken(payload: RefreshTokenPayload): string {
+    return jwt.sign({ ...payload }, env.REFRESH_TOKEN_SECRET as Secret, {
+      expiresIn: env.REFRESH_TOKEN_EXPIRY as SignOptions["expiresIn"],
+    });
+  }
+
   static verifyAccessToken = (
     token: string,
     logger?: pino.Logger,
@@ -65,12 +105,10 @@ export default class JwtServices {
     logger?: pino.Logger,
   ): Promise<{
     decoded: RefreshTokenPayload;
-    userOfToken: IUser;
-    session: Omit<IUserSession, "userId"> & { userId: IUser };
   }> => {
     try {
-      logger?.info({ token }, "Verifying refresh token");
-      logger?.debug({ token }, "Decoding refresh token");
+      logger?.info("Verifying refresh token");
+      logger?.debug("Decoding refresh token");
       const decoded = jwt.verify(
         token,
         env.REFRESH_TOKEN_SECRET,
@@ -87,47 +125,7 @@ export default class JwtServices {
 
       logger?.debug({ decoded }, "Refresh token verified");
 
-      const hashedToken = crypto
-        .createHash("sha256")
-        .update(token)
-        .digest("hex");
-
-      // decission pending probally will need to create a separate session service
-
-      const session = await userSession
-        .findOne({ refreshTokenHash: hashedToken })
-        .populate<{ userId: IUser }>("userId");
-
-      if (session === null) {
-        // nuke logout later beacuse this means the session could be comporomised
-        logger?.warn(
-          { decoded },
-          "no such session found with this refresh token",
-        );
-        throw new JWTError("Session invalid", JWT_ERROR_CODES.INVALID);
-      }
-
-      if (!session.isValid) {
-        // nuke logout later beacuse this means the session could be comporomised
-        logger?.warn({ userId: decoded._id }, "Session marked as invalid");
-        throw new JWTError("Session invalid", JWT_ERROR_CODES.INVALID);
-      }
-
-      const userOfToken = session.userId;
-
-      if (userOfToken == null) {
-        logger?.warn({ decoded }, "Invalid token no such user found");
-        throw new JWTError(
-          "invalid token no such user found",
-          JWT_ERROR_CODES.INVALID,
-        );
-      }
-
-      if (new Date() > session.expiresAt) {
-        throw new JWTError("Session expired", JWT_ERROR_CODES.EXPIRED);
-      }
-
-      return { decoded, userOfToken, session };
+      return { decoded };
     } catch (error) {
       if (error instanceof jwt.TokenExpiredError) {
         logger?.warn({ token }, "Refresh token is expired");

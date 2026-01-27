@@ -1,9 +1,9 @@
 import { NextFunction, Request, Response } from "express";
-import { JWT_ERROR_CODES, JWTError } from "../utils/jwt.utils";
 import { Types } from "mongoose";
-import JwtServices from "../services/jwt.service";
 import { authCache } from "../cache/auth.cache";
 import UserServices from "../services/user.service";
+import { TokenService } from "../services/token.service";
+import { JWT_ERROR_CODES, JWTError } from "../services/token.service";
 
 export const auth_cache_TTL = 5 * 60 * 1000;
 
@@ -15,7 +15,7 @@ export const authenticate = async (
   try {
     const logger = req.log;
 
-    const accessToken = JwtServices.extractTokenFromHeader(
+    const accessToken = TokenService.extractTokenFromHeader(
       req.headers.authorization,
       logger,
     );
@@ -24,7 +24,7 @@ export const authenticate = async (
       throw new JWTError("Access token not provided", JWT_ERROR_CODES.NO_TOKEN);
     }
 
-    const decoded = JwtServices.verifyAccessToken(accessToken, logger);
+    const decoded = TokenService.verifyAccessToken(accessToken, logger);
 
     const userId: string = decoded._id;
 

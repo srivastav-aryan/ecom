@@ -7,7 +7,7 @@ export interface IUserSession extends Document {
   expiresAt: Date,
   createdAt?: Date;
   updatedAt?: Date;
-  deviceInfo?: string
+  deviceInfo: string
 }
 
 
@@ -27,6 +27,7 @@ const userSessionSchema = new Schema<IUserSession>({
  
   deviceInfo: {
     type: String,
+    required: true
   },
 
   refreshTokenHash: {

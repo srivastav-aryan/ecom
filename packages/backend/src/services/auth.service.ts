@@ -4,37 +4,36 @@ import { ApiError } from "../utils/applevel.utils.js";
 import { IUser } from "../models/user.model.js";
 import mongoose from "mongoose";
 import pino from "pino";
-import JwtServices from "./jwt.service.js";
+import { TokenService } from "./token.service.js";
+import { SessionService } from "./session.service.js";
 
-  
 export default class AuthServices {
-  private static async _generateAndAssignToken(
+  private static async _generateTokenAndAssignSession(
     user: IUser,
     logger?: pino.Logger,
-    options?: { session: mongoose.ClientSession }
+    options?: { session: mongoose.ClientSession },
   ) {
-    // email verifcation later to be added
     logger?.info(
       { userId: user.id },
-      "starting the process of token generation for this user"
+      "starting the process of token generation for this user",
     );
 
-    const accessToken = user.generateAccessToken();
-
+    const accessToken = TokenService.generateAccessToken({
+      _id: user.id,
+      email: user.email,
+      role: user.role,
+    });
     logger?.debug({ userId: user.id }, "access token generated");
 
-    const refreshToken = user.generateRefreshToken();
+    const refreshToken = TokenService.generateRefreshToken({ _id: user.id });
     logger?.debug({ userId: user.id }, "refresh token generated");
 
-    await UserServices.updateRefToken(user.id, refreshToken, logger, options);
+    await SessionService.createSession(user.id, refreshToken);
 
     return { accessToken, refreshToken };
   }
 
-  async registerUser(
-    userInput: userRegistrationInput,
-    logger?: pino.Logger
-  ) {
+  async registerUser(userInput: userRegistrationInput, logger?: pino.Logger) {
     logger?.info({ email: userInput.email }, "Starting user registration");
 
     const session = await mongoose.startSession();
@@ -47,9 +46,13 @@ export default class AuthServices {
       });
 
       logger?.debug({ userId: regUser.id }, "User created, generating tokens");
-      const tokens = await AuthServices._generateAndAssignToken(regUser, logger, {
-        session,
-      });
+      const tokens = await AuthServices._generateTokenAndAssignSession(
+        regUser,
+        logger,
+        {
+          session,
+        },
+      );
 
       await session.commitTransaction();
       logger?.info({ userId: regUser.id }, "User registration successful");
@@ -58,7 +61,7 @@ export default class AuthServices {
     } catch (error: any) {
       logger?.error(
         { err: error, email: userInput.email },
-        "User registration failed"
+        "User registration failed",
       );
       await session.abortTransaction();
       throw new ApiError(error.statusCode, error.message, false);
@@ -88,16 +91,40 @@ export default class AuthServices {
 
     logger?.info({ userId: user.id }, "Login successful");
 
-    return AuthServices._generateAndAssignToken(user, logger);
+    return AuthServices._generateTokenAndAssignSession(user, logger);
   }
 
-  async refreshService (oldRefToken: any, logger?: any){
-    const { decoded, userOfToken , session} = await JwtServices.verifyRefreshToken(oldRefToken , logger)
+  async refreshService(oldRefToken: string, logger?: pino.Logger) {
+    const { decoded } = await TokenService.verifyRefreshToken(
+      oldRefToken,
+      logger,
+    );
 
-        await session.deleteOne();
+    const session = await SessionService.findSessionByToken(oldRefToken);
 
-       return await AuthServices._generateAndAssignToken(userOfToken)
+    if (!session) {
+      // nuke log out add later
+      logger?.warn(
+        { userId: decoded._id },
+        "Refresh failed: Session not found (Possible Reuse)",
+      );
+      throw new ApiError(401, "Invalid Session");
+    }
+    if (!session.isValid || new Date() > session.expiresAt) {
+      // nuke log out add later
+      logger?.warn(
+        { sessionId: session._id },
+        "Refresh failed: Session expired or invalid",
+      );
+      throw new ApiError(401, "Session Expired");
+    }
 
-       
+    const user = await UserServices.findUserByIdForAuth(decoded._id);
+
+    if (!user) throw new ApiError(401, "User not found");
+
+    await SessionService.revokeSession(session.id);
+
+    return await AuthServices._generateTokenAndAssignSession(user, logger);
   }
 }

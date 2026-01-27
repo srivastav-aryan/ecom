@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { ZodError } from "zod";
 import { ApiError } from "../utils/applevel.utils.js";
 import { env } from "../config/env.js";
-import { JWTError } from "../utils/jwt.utils.js";
+import { JWTError } from "../services/token.service.js";
 
 // globall error handler
 export const globalErrorHandler = (

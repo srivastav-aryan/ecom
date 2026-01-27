@@ -1,12 +1,10 @@
 // Following factory function pattern instead of classes
-
 import { NextFunction, Request, Response } from "express";
 import pino from "pino";
 import { env } from "../config/env.js";
 import { ApiError } from "../utils/applevel.utils.js";
 import { userLoginInput, userRegistrationInput } from "@e-com/shared/schemas";
-import JwtServices from "../services/jwt.service.js";
-import AuthServices from "../services/auth.service.js";
+import { TokenService } from "../services/token.service.js";
 
 export interface IAuthService {
   registerUser: (
@@ -111,12 +109,12 @@ export const authControllerCreator = (authServices: IAuthService, loginLimitter:
     refreshController: async (req: Request, res: Response , next: NextFunction) => {
       const logger = req.log.child({ route: "refresh_token" });
       try {
-       const refToken = JwtServices.extractRefreshToken(req.cookies, req.body)  
-       if (!refToken) {
+       const oldRefToken = TokenService.extractRefreshToken(req.cookies, req.body)  
+         if (!oldRefToken) {
         throw new ApiError(401, "Refresh Token not provided") 
        }
 
-       const {accessToken, refreshToken} = await authServices.refreshService(refToken, logger)
+       const {accessToken, refreshToken} = await authServices.refreshService(oldRefToken, logger)
        
        res.cookie("refreshToken", refreshToken, {
         httpOnly: true,

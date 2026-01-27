@@ -10,7 +10,6 @@ import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import jwt, { Secret, SignOptions } from "jsonwebtoken";
 import { env } from "../config/env.js";
-import { AccessTokenPayload, RefreshTokenPayload } from "../utils/jwt.utils.js";
 
 export interface IUser extends Document {
   email: string;
@@ -175,6 +174,7 @@ userSchema.methods.isPasswordCorrect = async function(
   return res;
 };
 
+// later move this also to the token service class
 userSchema.methods.generateEmailVerificationToken =
   async function(): Promise<string> {
     const buffer = crypto.randomBytes(32);
@@ -186,6 +186,7 @@ userSchema.methods.generateEmailVerificationToken =
     return token;
   };
 
+// later move this also to the token service class
 userSchema.methods.generatePasswordResetToken =
   async function(): Promise<string> {
     const buffer = crypto.randomBytes(32);
@@ -196,32 +197,5 @@ userSchema.methods.generatePasswordResetToken =
 
     return token;
   };
-
-userSchema.methods.generateAccessToken = function(): string {
-  const secret: Secret = env.ACCESS_TOKEN_SECRET as string;
-  const expiry: SignOptions["expiresIn"] = env.ACCESS_TOKEN_EXPIRY
-    ? (env.ACCESS_TOKEN_EXPIRY as SignOptions["expiresIn"])
-    : "15m";
-
-  const payload: AccessTokenPayload = {
-    _id: this._id,
-    email: this.email,
-    role: this.role,
-  };
-  return jwt.sign(payload, secret, { expiresIn: expiry });
-};
-
-userSchema.methods.generateRefreshToken = function(): string {
-  const secret: Secret = env.REFRESH_TOKEN_SECRET as string;
-  const expiry: SignOptions["expiresIn"] = env.REFRESH_TOKEN_EXPIRY
-    ? (env.REFRESH_TOKEN_EXPIRY as SignOptions["expiresIn"])
-    : "7d";
-
-  const payload: RefreshTokenPayload = {
-    _id: this._id,
-  };
-
-  return jwt.sign(payload, secret, { expiresIn: expiry });
-};
 
 export const User: Model<IUser> = mongoose.model<IUser>("User", userSchema);

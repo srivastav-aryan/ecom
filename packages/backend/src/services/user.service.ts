@@ -3,8 +3,6 @@ import { IUser, User } from "../models/user.model.js";
 import { ApiError } from "../utils/applevel.utils.js";
 import mongoose from "mongoose";
 import pino from "pino";
-import crypto from "crypto";
-import { userSession } from "../models/userSession.model.js";
 
 export default class UserServices {
   static async findUserByEmail(
@@ -56,34 +54,6 @@ export default class UserServices {
     }
 
     return user;
-  }
-
-  static async updateRefToken(
-    userId: string,
-    refreshToken: string,
-    logger?: pino.Logger,
-    options?: { session: mongoose.ClientSession },
-  ): Promise<void> {
-    logger?.debug({ userId }, "Updating refresh token in database");
-
-    const hashedRefToken = crypto.createHash("sha256").update(refreshToken).digest("hex");
-
-    const expiryDays = 7 * 24 * 60 * 60 * 1000;
-  
-  const expiresAt = new Date(Date.now() + expiryDays);
-
-    await userSession.create([
-      {
-        userId: userId,
-        isValid: true,
-        refreshTokenHash: hashedRefToken,
-        deviceInfo: "UNKNOWN",
-       expiresAt 
-      }
-    ])
-
-
-    logger?.debug({ userId }, "Refresh token updated");
   }
 
   static async createUser(
