@@ -12,7 +12,7 @@ export default class AuthServices {
     private userServices: UserServiceInterface,
     private sessionService: SessionServiceInterface,
     private tokenService: TokenServiceInterface,
-  ) {}
+  ) { }
 
   private async _generateTokenAndAssignSession(
     user: IUser,
@@ -31,7 +31,9 @@ export default class AuthServices {
     });
     ctx?.logger?.debug({ userId: user.id }, "access token generated");
 
-    const refreshToken = this.tokenService.generateRefreshToken({ _id: user.id });
+    const refreshToken = this.tokenService.generateRefreshToken({
+      _id: user.id,
+    });
     ctx?.logger?.debug({ userId: user.id }, "refresh token generated");
 
     await this.sessionService.createSession(user.id, refreshToken, ctx);
@@ -51,12 +53,13 @@ export default class AuthServices {
         session,
       });
 
-      ctx?.logger?.debug({ userId: regUser.id }, "User created, generating tokens");
-      const tokens = await this._generateTokenAndAssignSession(
-        regUser,
-        ctx,
-        { session },
+      ctx?.logger?.debug(
+        { userId: regUser.id },
+        "User created, generating tokens",
       );
+      const tokens = await this._generateTokenAndAssignSession(regUser, ctx, {
+        session,
+      });
 
       await session.commitTransaction();
       ctx?.logger?.info({ userId: regUser.id }, "User registration successful");
@@ -88,7 +91,10 @@ export default class AuthServices {
 
     const isPasswordValid = await user.isPasswordCorrect(password);
     if (!isPasswordValid) {
-      ctx?.logger?.warn({ email, userId: user.id }, "Login failed - wrong password");
+      ctx?.logger?.warn(
+        { email, userId: user.id },
+        "Login failed - wrong password",
+      );
       throw new ApiError(400, "Invalid credentials");
     }
 
@@ -122,5 +128,17 @@ export default class AuthServices {
     return await this._generateTokenAndAssignSession(user, ctx);
   }
 
+  async deleteOneSession(refreshToken: string, ctx?: RequestContext) {
+    const refTokenPayload = this.tokenService.verifyRefreshToken(
+      refreshToken,
+      ctx,
+    );
 
+    const session = await this.sessionService.findSessionByToken(
+      refreshToken,
+      ctx,
+    );
+
+    await this.sessionService.revokeSession(session.id, ctx);
+  }
 }

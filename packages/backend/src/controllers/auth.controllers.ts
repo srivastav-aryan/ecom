@@ -150,6 +150,31 @@ export const authControllerCreator = (
       }
     },
 
+    logOut: async (req: Request, res: Response, next: NextFunction) => {
+      const ctx = createCtx(req, "log out one device routee");
+      try {
+        const refreshToken = tokenService.extractRefreshToken(
+          req.cookies,
+          req.body,
+          ctx,
+        );
 
+        await authServices.deleteOneSession(refreshToken);
+
+        res.clearCookie("refreshToken", {
+          httpOnly: true,
+          secure: env.NODE_ENV === "production",
+          sameSite: "strict",
+          path: "/auth/refresh",
+        });
+
+        res.status(200).json({
+          success: true,
+          message: "Logout successful",
+        });
+      } catch (error: any) {
+        next(error);
+      }
+    },
   };
 };
