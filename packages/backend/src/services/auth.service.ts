@@ -100,16 +100,12 @@ export default class AuthServices {
   async refreshService(oldRefToken: string, ctx?: RequestContext) {
     const { decoded } = this.tokenService.verifyRefreshToken(oldRefToken, ctx);
 
-    const session = await this.sessionService.findSessionByToken(oldRefToken, ctx);
+    const session = await this.sessionService.findSessionByToken(
+      oldRefToken,
+      ctx,
+    );
 
-    if (!session) {
-      ctx?.logger?.warn(
-        { userId: decoded._id },
-        "Refresh failed: Session not found (Possible Reuse)",
-      );
-      throw new ApiError(401, "Invalid Session");
-    }
-    if (!session.isValid || new Date() > session.expiresAt) {
+   if (!session.isValid || new Date() > session.expiresAt) {
       ctx?.logger?.warn(
         { sessionId: session._id },
         "Refresh failed: Session expired or invalid",
