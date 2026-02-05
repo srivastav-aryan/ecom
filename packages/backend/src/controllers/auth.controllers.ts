@@ -2,25 +2,10 @@
 import { NextFunction, Request, Response } from "express";
 import { env } from "../config/env.js";
 import { ApiError } from "../utils/applevel.utils.js";
-import { userLoginInput, userRegistrationInput } from "@e-com/shared/schemas";
 import { TokenServiceInterface } from "../interfaces/services/token.service.interface.js";
 import { RequestContext } from "../types/request-context.js";
 import pino from "pino";
-
-export interface IAuthService {
-  registerUser: (
-    input: userRegistrationInput,
-    ctx?: RequestContext,
-  ) => Promise<{ accessToken: string; refreshToken: string }>;
-  loginUser: (
-    input: userLoginInput,
-    ctx?: RequestContext,
-  ) => Promise<{ accessToken: string; refreshToken: string }>;
-  refreshService: (
-    reftoken: string,
-    ctx?: RequestContext,
-  ) => Promise<{ accessToken: string; refreshToken: string }>;
-}
+import { IAuthService } from "../interfaces/services/auth.service.interface.js";
 
 export interface RateLimiter {
   checkRateLimit: (
