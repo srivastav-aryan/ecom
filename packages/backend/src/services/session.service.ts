@@ -1,17 +1,17 @@
 import mongoose from "mongoose";
-import pino from "pino";
 import crypto from "crypto";
 import { userSession, IUserSession } from "../models/userSession.model.js";
 import { SessionServiceInterface } from "../interfaces/services/session.service.interface.js";
+import { RequestContext } from "../types/request-context.js";
 
 export class SessionService implements SessionServiceInterface {
   async createSession(
     userId: string,
     refreshToken: string,
-    logger?: pino.Logger,
+    ctx?: RequestContext,
     options?: { session: mongoose.ClientSession },
   ) {
-    logger?.debug({ userId }, "creating session for this user");
+    ctx?.logger?.debug({ userId }, "creating session for this user");
     const hashedRefToken = crypto
       .createHash("sha256")
       .update(refreshToken)
@@ -26,16 +26,17 @@ export class SessionService implements SessionServiceInterface {
         userId: userId,
         isValid: true,
         refreshTokenHash: hashedRefToken,
-        deviceInfo: "UNKNOWN",
+        deviceInfo: ctx?.deviceInfo || "UNKNOWN",
         expiresAt,
       },
     ]);
 
-    logger?.debug({ userId }, "session created for this user");
+    ctx?.logger?.debug({ userId }, "session created for this user");
   }
 
   async findSessionByToken(
-    refreshToken: string
+    refreshToken: string,
+    ctx?: RequestContext,
   ): Promise<IUserSession | null> {
     const hash = crypto
       .createHash("sha256")
@@ -44,7 +45,7 @@ export class SessionService implements SessionServiceInterface {
     return userSession.findOne({ refreshTokenHash: hash });
   }
 
-  async revokeSession(sessionId: string) {
+  async revokeSession(sessionId: string, ctx?: RequestContext) {
     await userSession.findByIdAndDelete(sessionId);
   }
 }

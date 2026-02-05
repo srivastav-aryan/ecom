@@ -3,6 +3,7 @@ import { Types } from "mongoose";
 import { authCache } from "../cache/auth.cache.js";
 import { TokenServiceInterface, JWT_ERROR_CODES, JWTError } from "../interfaces/services/token.service.interface.js";
 import { UserServiceInterface } from "../interfaces/services/user.service.interface.js";
+import { RequestContext } from "../types/request-context.js";
 
 export const auth_cache_TTL = 5 * 60 * 1000;
 
@@ -15,23 +16,32 @@ export const createAuthMiddleware = (
     res: Response,
     next: NextFunction,
   ): Promise<void> => {
+    // Create context for this request
+    const ctx: RequestContext = {
+      logger: req.log?.child({ middleware: "auth" }),
+      deviceInfo: req.headers['user-agent'] || 'unknown',
+      ip: req.ip || 'unknown',
+      requestId: req.id,
+    };
+
     try {
       const accessToken = tokenService.extractTokenFromHeader(
         req.headers.authorization,
+        ctx,
       );
 
       if (!accessToken) {
         throw new JWTError("Access token not provided", JWT_ERROR_CODES.NO_TOKEN);
       }
 
-      const decoded = tokenService.verifyAccessToken(accessToken);
+      const decoded = tokenService.verifyAccessToken(accessToken, ctx);
 
       const userId: string = decoded._id;
 
       let cachedUser = authCache.get(userId);
 
       if (!cachedUser) {
-        const user = await userService.findUserByIdForAuth(userId);
+        const user = await userService.findUserByIdForAuth(userId, ctx);
 
         if (!user || !user.isActive) {
           throw new JWTError("User inactive", JWT_ERROR_CODES.INVALID);

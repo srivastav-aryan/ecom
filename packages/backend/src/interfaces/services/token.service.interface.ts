@@ -1,6 +1,6 @@
 import { UserRole } from "@e-com/shared/types";
 import { JwtPayload } from "jsonwebtoken";
-import pino from "pino";
+import { RequestContext } from "../../types/request-context.js";
 
 export interface AccessTokenPayload extends JwtPayload {
   _id: string;
@@ -37,13 +37,11 @@ export class JWTError extends Error {
   }
 }
 
-
 export interface TokenServiceInterface {
-    generateAccessToken(payload: AccessTokenPayload): string;
-    generateRefreshToken(payload: RefreshTokenPayload): string;
-    verifyAccessToken(token: string, logger?: pino.Logger): AccessTokenPayload;
-    verifyRefreshToken(token: string, logger?: pino.Logger): { decoded: RefreshTokenPayload };
-    extractTokenFromHeader(authHeader?: string, logger?: pino.Logger): string | null;
-    extractRefreshToken(cookies?: Record<string, string>, body?: any, logger?: pino.Logger): string | null;
+  generateAccessToken(payload: AccessTokenPayload): string;
+  generateRefreshToken(payload: RefreshTokenPayload): string;
+  verifyAccessToken(token: string, ctx?: RequestContext): AccessTokenPayload;
+  verifyRefreshToken(token: string, ctx?: RequestContext): { decoded: RefreshTokenPayload };
+  extractTokenFromHeader(authHeader?: string, ctx?: RequestContext): string | null;
+  extractRefreshToken(cookies?: Record<string, string>, body?: any, ctx?: RequestContext): string | null;
 }
-

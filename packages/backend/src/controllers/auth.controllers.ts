@@ -1,30 +1,31 @@
 // Following factory function pattern instead of classes
 import { NextFunction, Request, Response } from "express";
-import pino from "pino";
 import { env } from "../config/env.js";
 import { ApiError } from "../utils/applevel.utils.js";
 import { userLoginInput, userRegistrationInput } from "@e-com/shared/schemas";
 import { TokenServiceInterface } from "../interfaces/services/token.service.interface.js";
+import { RequestContext } from "../types/request-context.js";
+import pino from "pino";
 
 export interface IAuthService {
   registerUser: (
     input: userRegistrationInput,
-    logger?: pino.Logger
+    ctx?: RequestContext,
   ) => Promise<{ accessToken: string; refreshToken: string }>;
   loginUser: (
     input: userLoginInput,
-    logger?: pino.Logger
+    ctx?: RequestContext,
   ) => Promise<{ accessToken: string; refreshToken: string }>;
   refreshService: (
     reftoken: string,
-    logger?: pino.Logger
+    ctx?: RequestContext,
   ) => Promise<{ accessToken: string; refreshToken: string }>;
 }
 
 export interface RateLimiter {
   checkRateLimit: (
     identifier: string,
-    logger?: pino.Logger
+    logger?: pino.Logger,
   ) => {
     allowed: boolean;
     remainingAttempts: number;
@@ -32,20 +33,33 @@ export interface RateLimiter {
   };
 }
 
+/**
+ * Creates RequestContext from Express request
+ */
+const createCtx = (req: Request, route: string): RequestContext => ({
+  logger: req.log.child({ route }),
+  deviceInfo: req.headers["user-agent"] || "unknown",
+  ip: req.ip || "unknown",
+  requestId: req.id,
+});
+
 export const authControllerCreator = (
   authServices: IAuthService,
   loginLimiter: RateLimiter,
   tokenService: TokenServiceInterface,
 ) => {
   return {
-    registerController: async (req: Request, res: Response, next: NextFunction) => {
-      //@ts-ignore
-      const logger = req.log.child({ route: "register" });
+    registerController: async (
+      req: Request,
+      res: Response,
+      next: NextFunction,
+    ) => {
+      const ctx = createCtx(req, "register");
 
       try {
         const { accessToken, refreshToken } = await authServices.registerUser(
           req.body,
-          logger
+          ctx,
         );
 
         res.cookie("refreshToken", refreshToken, {
@@ -65,29 +79,32 @@ export const authControllerCreator = (
       }
     },
 
-    loginController: async (req: Request, res: Response, next: NextFunction) => {
-      //@ts-ignore
-      const logger = req.log.child({ route: "login" });
+    loginController: async (
+      req: Request,
+      res: Response,
+      next: NextFunction,
+    ) => {
+      const ctx = createCtx(req, "login");
 
       try {
         const { email } = req.body;
 
         const result = loginLimiter.checkRateLimit(
           email || req.ip,
-          logger.child({ email })
+          ctx.logger?.child({ email }),
         );
 
         if (!result.allowed) {
           throw new ApiError(
             429,
             "Too many login attempts. Try again later.",
-            false
+            false,
           );
         }
 
         const { accessToken, refreshToken } = await authServices.loginUser(
           req.body,
-          logger
+          ctx,
         );
 
         res.cookie("refreshToken", refreshToken, {
@@ -101,7 +118,6 @@ export const authControllerCreator = (
 
         res.status(200).json({
           success: true,
-          // just sending the reftoken for now testing the refresh endpoint soo remove this later
           data: { accessToken, refreshToken },
           message: "User logged in successfully",
         });
@@ -109,35 +125,46 @@ export const authControllerCreator = (
         next(error);
       }
     },
-    
-    refreshController: async (req: Request, res: Response , next: NextFunction) => {
-      const logger = req.log.child({ route: "refresh_token" });
+
+    refreshController: async (
+      req: Request,
+      res: Response,
+      next: NextFunction,
+    ) => {
+      const ctx = createCtx(req, "refresh_token");
       try {
-       const oldRefToken = tokenService.extractRefreshToken(req.cookies, req.body, logger);
-         if (!oldRefToken) {
-        throw new ApiError(401, "Refresh Token not provided") 
-       }
+        const oldRefToken = tokenService.extractRefreshToken(
+          req.cookies,
+          req.body,
+          ctx,
+        );
+        if (!oldRefToken) {
+          throw new ApiError(401, "Refresh Token not provided");
+        }
 
-       const {accessToken, refreshToken} = await authServices.refreshService(oldRefToken, logger)
-       
-       res.cookie("refreshToken", refreshToken, {
-        httpOnly: true,
-        secure: env.NODE_ENV === "production",
-        sameSite: "strict",
-        path: "/auth/refresh",
-        maxAge:
-           7 * 24 * 60 * 60 * 1000,
-      });
+        const { accessToken, refreshToken } = await authServices.refreshService(
+          oldRefToken,
+          ctx,
+        );
 
-      res.status(200).json({
-        success: true,
-        data: { accessToken },
-        message: "User logged in successfully",
-      });
+        res.cookie("refreshToken", refreshToken, {
+          httpOnly: true,
+          secure: env.NODE_ENV === "production",
+          sameSite: "strict",
+          path: "/auth/refresh",
+          maxAge: 7 * 24 * 60 * 60 * 1000,
+        });
 
+        res.status(200).json({
+          success: true,
+          data: { accessToken },
+          message: "Token refreshed successfully",
+        });
       } catch (error) {
-        next(error)
+        next(error);
       }
-  },
-};
+    },
+
+
+  };
 };

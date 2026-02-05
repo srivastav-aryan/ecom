@@ -1,17 +1,16 @@
 import { IUser } from "../../models/user.model";
 import { userRegistrationInput } from "@e-com/shared/schemas";
 import mongoose from "mongoose";
-import pino from "pino";
+import { RequestContext } from "../../types/request-context.js";
 
 export interface UserServiceInterface {
-  findUserByEmail(email: string, logger?: pino.Logger): Promise<IUser | null>;
-  findUserByIdForAuth(userId: string, logger?: pino.Logger): Promise<IUser | null>;
-  findUserForLogin(email: string, logger?: pino.Logger): Promise<IUser | null>;
+  findUserByEmail(email: string, ctx?: RequestContext): Promise<IUser | null>;
+  findUserByIdForAuth(userId: string, ctx?: RequestContext): Promise<IUser | null>;
+  findUserForLogin(email: string, ctx?: RequestContext): Promise<IUser | null>;
   createUser(
     input: userRegistrationInput,
-    logger?: pino.Logger,
+    ctx?: RequestContext,
     options?: { session: mongoose.ClientSession }
   ): Promise<IUser>;
 }
-
 

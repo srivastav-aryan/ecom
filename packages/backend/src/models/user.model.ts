@@ -8,8 +8,6 @@ import {
 import { UserAddress } from "@e-com/shared/schemas";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
-import jwt, { Secret, SignOptions } from "jsonwebtoken";
-import { env } from "../config/env.js";
 
 export interface IUser extends Document {
   email: string;
@@ -28,7 +26,6 @@ export interface IUser extends Document {
   passwordResetExpires?: Date;
 
   cart: Schema.Types.ObjectId;
-  wishlist: Schema.Types.ObjectId;
   reviews: Schema.Types.ObjectId;
   orderHistory: Schema.Types.ObjectId;
   isDeleted: boolean
@@ -39,8 +36,6 @@ export interface IUser extends Document {
   isPasswordCorrect(password: string): Promise<boolean>;
   generatePasswordResetToken(): Promise<string>;
   generateEmailVerificationToken(): Promise<string>;
-  generateRefreshToken(): string;
-  generateAccessToken(): string;
 }
 
 const userSchema = new Schema<IUser>(
@@ -129,13 +124,7 @@ const userSchema = new Schema<IUser>(
       // required: true,
     },
 
-    wishlist: {
-      type: Schema.Types.ObjectId,
-      ref: "Wishlist",
-
-      //for nowwwww
-      // required: true,
-    },
+    
 
     reviews: {
       type: [Schema.Types.ObjectId],

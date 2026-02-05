@@ -2,22 +2,22 @@ import { userRegistrationInput } from "@e-com/shared/schemas";
 import { IUser, User } from "../models/user.model.js";
 import { ApiError } from "../utils/applevel.utils.js";
 import mongoose from "mongoose";
-import pino from "pino";
 import { UserServiceInterface } from "../interfaces/services/user.service.interface.js";
+import { RequestContext } from "../types/request-context.js";
 
 export default class UserServices implements UserServiceInterface {
   async findUserByEmail(
     email: string,
-    logger?: pino.Logger,
+    ctx?: RequestContext,
   ): Promise<IUser | null> {
-    logger?.debug({ email }, "Looking up user by email");
+    ctx?.logger?.debug({ email }, "Looking up user by email");
 
     const user = await User.findOne({ email: email });
 
     if (user) {
-      logger?.debug({ userId: user.id }, "User found by email");
+      ctx?.logger?.debug({ userId: user.id }, "User found by email");
     } else {
-      logger?.debug({ email }, "No user found by email");
+      ctx?.logger?.debug({ email }, "No user found by email");
     }
 
     return user;
@@ -25,17 +25,17 @@ export default class UserServices implements UserServiceInterface {
 
   async findUserByIdForAuth(
     userId: string,
-    logger?: pino.Logger,
+    ctx?: RequestContext,
   ): Promise<IUser | null> {
-    logger?.debug({ userId }, "Looking up user by ID for auth");
+    ctx?.logger?.debug({ userId }, "Looking up user by ID for auth");
     const user = await User.findById(userId).select(
       "+refreshToken +refreshTokenVersion +password +isActive",
     );
 
     if (user) {
-      logger?.debug({ userId: user.id }, "User found by ID for auth");
+      ctx?.logger?.debug({ userId: user.id }, "User found by ID for auth");
     } else {
-      logger?.debug({ userId }, "No user found by ID for auth");
+      ctx?.logger?.debug({ userId }, "No user found by ID for auth");
     }
 
     return user;
@@ -43,15 +43,15 @@ export default class UserServices implements UserServiceInterface {
 
   async findUserForLogin(
     email: string,
-    logger?: pino.Logger,
+    ctx?: RequestContext,
   ): Promise<IUser | null> {
-    logger?.debug({ email }, "Looking up user by email for LOGIN");
+    ctx?.logger?.debug({ email }, "Looking up user by email for LOGIN");
     const user = await User.findOne({ email: email }).select("+password");
 
     if (user) {
-      logger?.debug({ userId: user.id }, "User found by email");
+      ctx?.logger?.debug({ userId: user.id }, "User found by email");
     } else {
-      logger?.debug({ email }, "No user found by email");
+      ctx?.logger?.debug({ email }, "No user found by email");
     }
 
     return user;
@@ -59,12 +59,12 @@ export default class UserServices implements UserServiceInterface {
 
   async createUser(
     input: userRegistrationInput,
-    logger?: pino.Logger,
+    ctx?: RequestContext,
     options?: { session: mongoose.ClientSession },
   ): Promise<IUser> {
     const { email, lastname, firstname, password } = input;
 
-    logger?.debug({ email }, "Checking if user already exists");
+    ctx?.logger?.debug({ email }, "Checking if user already exists");
 
     const query = User.findOne({ email });
     if (options?.session) {
@@ -73,7 +73,7 @@ export default class UserServices implements UserServiceInterface {
     const userExists = await query;
 
     if (userExists) {
-      logger?.warn(
+      ctx?.logger?.warn(
         { email },
         "Attempt to register with an already registered email",
       );
@@ -83,7 +83,7 @@ export default class UserServices implements UserServiceInterface {
       );
     }
 
-    logger?.debug({ email }, "Creating new user in database");
+    ctx?.logger?.debug({ email }, "Creating new user in database");
     const [newUser] = await User.create(
       [
         {
@@ -96,7 +96,7 @@ export default class UserServices implements UserServiceInterface {
       { session: options?.session },
     );
 
-    logger?.info({ userId: newUser.id }, "New user created successfully");
+    ctx?.logger?.info({ userId: newUser.id }, "New user created successfully");
 
     return newUser;
   }
