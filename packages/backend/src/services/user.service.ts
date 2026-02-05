@@ -26,34 +26,34 @@ export default class UserServices implements UserServiceInterface {
   async findUserByIdForAuth(
     userId: string,
     ctx?: RequestContext,
-  ): Promise<IUser | null> {
+  ): Promise<IUser> {
     ctx?.logger?.debug({ userId }, "Looking up user by ID for auth");
     const user = await User.findById(userId).select(
       "+refreshToken +refreshTokenVersion +password +isActive",
     );
 
-    if (user) {
-      ctx?.logger?.debug({ userId: user.id }, "User found by ID for auth");
-    } else {
-      ctx?.logger?.debug({ userId }, "No user found by ID for auth");
+    if (!user) {
+      ctx?.logger?.warn({ userId }, "User not found by ID for auth");
+      throw new ApiError(401, "User not found");
     }
 
+    ctx?.logger?.debug({ userId: user.id }, "User found by ID for auth");
     return user;
   }
 
   async findUserForLogin(
     email: string,
     ctx?: RequestContext,
-  ): Promise<IUser | null> {
+  ): Promise<IUser> {
     ctx?.logger?.debug({ email }, "Looking up user by email for LOGIN");
     const user = await User.findOne({ email: email }).select("+password");
 
-    if (user) {
-      ctx?.logger?.debug({ userId: user.id }, "User found by email");
-    } else {
-      ctx?.logger?.debug({ email }, "No user found by email");
+    if (!user) {
+      ctx?.logger?.warn({ email }, "Login failed - user not found");
+      throw new ApiError(400, "Invalid credentials");
     }
 
+    ctx?.logger?.debug({ userId: user.id }, "User found by email");
     return user;
   }
 

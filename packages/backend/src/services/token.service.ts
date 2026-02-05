@@ -124,17 +124,17 @@ export class TokenService implements TokenServiceInterface {
   extractTokenFromHeader(
     authHeader?: string,
     ctx?: RequestContext,
-  ): string | null {
+  ): string {
     if (!authHeader) {
       ctx?.logger?.warn({ authHeader }, "No auth header provided");
-      return null;
+      throw new JWTError("Access token not provided", JWT_ERROR_CODES.NO_TOKEN);
     }
 
     const parts = authHeader.split(" ");
 
     if (parts.length !== 2 || parts[0] !== "Bearer") {
       ctx?.logger?.warn({ authHeader }, "Invalid auth header format");
-      return null;
+      throw new JWTError("Invalid authorization header format", JWT_ERROR_CODES.MALFORMED);
     }
 
     return parts[1];

@@ -42,6 +42,6 @@ export interface TokenServiceInterface {
   generateRefreshToken(payload: RefreshTokenPayload): string;
   verifyAccessToken(token: string, ctx?: RequestContext): AccessTokenPayload;
   verifyRefreshToken(token: string, ctx?: RequestContext): { decoded: RefreshTokenPayload };
-  extractTokenFromHeader(authHeader?: string, ctx?: RequestContext): string | null;
+  extractTokenFromHeader(authHeader?: string, ctx?: RequestContext): string;
   extractRefreshToken(cookies?: Record<string, string>, body?: any, ctx?: RequestContext): string ;
 }

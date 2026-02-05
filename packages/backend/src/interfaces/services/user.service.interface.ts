@@ -5,8 +5,8 @@ import { RequestContext } from "../../types/request-context.js";
 
 export interface UserServiceInterface {
   findUserByEmail(email: string, ctx?: RequestContext): Promise<IUser | null>;
-  findUserByIdForAuth(userId: string, ctx?: RequestContext): Promise<IUser | null>;
-  findUserForLogin(email: string, ctx?: RequestContext): Promise<IUser | null>;
+  findUserByIdForAuth(userId: string, ctx?: RequestContext): Promise<IUser>;
+  findUserForLogin(email: string, ctx?: RequestContext): Promise<IUser>;
   createUser(
     input: userRegistrationInput,
     ctx?: RequestContext,

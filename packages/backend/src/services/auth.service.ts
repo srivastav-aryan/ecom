@@ -84,11 +84,6 @@ export default class AuthServices {
 
     const user = await this.userServices.findUserForLogin(email, ctx);
 
-    if (!user) {
-      ctx?.logger?.warn({ email }, "Login failed - user not found");
-      throw new ApiError(400, "Invalid credentials");
-    }
-
     const isPasswordValid = await user.isPasswordCorrect(password);
     if (!isPasswordValid) {
       ctx?.logger?.warn(
@@ -120,8 +115,6 @@ export default class AuthServices {
     }
 
     const user = await this.userServices.findUserByIdForAuth(decoded._id, ctx);
-
-    if (!user) throw new ApiError(401, "User not found");
 
     await this.sessionService.revokeSession(session.id, ctx);
 

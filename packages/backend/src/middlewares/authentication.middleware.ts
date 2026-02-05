@@ -30,10 +30,6 @@ export const createAuthMiddleware = (
         ctx,
       );
 
-      if (!accessToken) {
-        throw new JWTError("Access token not provided", JWT_ERROR_CODES.NO_TOKEN);
-      }
-
       const decoded = tokenService.verifyAccessToken(accessToken, ctx);
 
       const userId: string = decoded._id;
@@ -43,7 +39,7 @@ export const createAuthMiddleware = (
       if (!cachedUser) {
         const user = await userService.findUserByIdForAuth(userId, ctx);
 
-        if (!user || !user.isActive) {
+        if (!user.isActive) {
           throw new JWTError("User inactive", JWT_ERROR_CODES.INVALID);
         }
 
