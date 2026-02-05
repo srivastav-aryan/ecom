@@ -140,11 +140,11 @@ export class TokenService implements TokenServiceInterface {
     return parts[1];
   }
 
-  extractRefreshToken(
-    cookies?: Record<string, string>,
-    body?: any,
-    ctx?: RequestContext,
-  ): string | null {
-    return cookies?.refreshToken || body?.refreshToken || null;
+extractRefreshToken(cookies: Record<string, string>, body: any, ctx?: RequestContext): string {
+  const token = cookies?.refreshToken || body?.refreshToken;
+  if (!token) {
+    throw new JWTError("Refresh token not provided", JWT_ERROR_CODES.NO_TOKEN);
   }
+  return token;
+}
 }
