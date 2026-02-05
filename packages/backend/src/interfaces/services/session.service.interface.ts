@@ -13,4 +13,6 @@ export interface SessionServiceInterface {
   findSessionByToken(refreshToken: string, ctx?: RequestContext): Promise<IUserSession >;
 
   revokeSession(sessionId: string, ctx?: RequestContext): Promise<void>;
+
+  revokeAllSessions(userId: string, ctx?: RequestContext): Promise<number>;
 }

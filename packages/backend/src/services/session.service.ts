@@ -54,7 +54,22 @@ async findSessionByToken(
   return session;
 }
 
-  async revokeSession(sessionId: string, ctx?: RequestContext) {
+  async revokeSession(sessionId: string, ctx?: RequestContext): Promise<void> {
+    ctx?.logger?.debug({ sessionId }, "Revoking session");
     await userSession.findByIdAndDelete(sessionId);
+    ctx?.logger?.debug({ sessionId }, "Session revoked");
+  }
+
+  async revokeAllSessions(userId: string, ctx?: RequestContext): Promise<number> {
+    ctx?.logger?.info({ userId }, "Revoking all sessions for user");
+
+    const result = await userSession.deleteMany({ userId });
+
+    ctx?.logger?.info(
+      { userId, deletedCount: result.deletedCount },
+      "All sessions revoked for user",
+    );
+
+    return result.deletedCount;
   }
 }
