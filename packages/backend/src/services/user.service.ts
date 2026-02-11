@@ -60,16 +60,13 @@ export default class UserServices implements UserServiceInterface {
   async createUser(
     input: userRegistrationInput,
     ctx?: RequestContext,
-    options?: { session: mongoose.ClientSession },
   ): Promise<IUser> {
     const { email, lastname, firstname, password } = input;
 
     ctx?.logger?.debug({ email }, "Checking if user already exists");
 
-    const query = User.findOne({ email });
-    if (options?.session) {
-      query.session(options.session);
-    }
+    const query = User.findOne({ email }).lean();
+
     const userExists = await query;
 
     if (userExists) {
@@ -93,7 +90,6 @@ export default class UserServices implements UserServiceInterface {
           lastname,
         },
       ],
-      { session: options?.session },
     );
 
     ctx?.logger?.info({ userId: newUser.id }, "New user created successfully");

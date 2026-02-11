@@ -17,7 +17,6 @@ export default class AuthServices {
   private async _generateTokenAndAssignSession(
     user: IUser,
     ctx?: RequestContext,
-    options?: { session: mongoose.ClientSession },
   ) {
     ctx?.logger?.info(
       { userId: user.id },
@@ -44,24 +43,16 @@ export default class AuthServices {
   async registerUser(userInput: userRegistrationInput, ctx?: RequestContext) {
     ctx?.logger?.info({ email: userInput.email }, "Starting user registration");
 
-    const session = await mongoose.startSession();
-    session.startTransaction({ writeConcern: { w: "majority" } });
-
     try {
       ctx?.logger?.debug("starting the process for creating user in database");
-      const regUser = await this.userServices.createUser(userInput, ctx, {
-        session,
-      });
+      const regUser = await this.userServices.createUser(userInput, ctx);
 
       ctx?.logger?.debug(
         { userId: regUser.id },
         "User created, generating tokens",
       );
-      const tokens = await this._generateTokenAndAssignSession(regUser, ctx, {
-        session,
-      });
+      const tokens = await this._generateTokenAndAssignSession(regUser, ctx);
 
-      await session.commitTransaction();
       ctx?.logger?.info({ userId: regUser.id }, "User registration successful");
 
       return tokens;
@@ -70,11 +61,7 @@ export default class AuthServices {
         { err: error, email: userInput.email },
         "User registration failed",
       );
-      await session.abortTransaction();
       throw new ApiError(error.statusCode, error.message, false);
-    } finally {
-      session.endSession();
-      ctx?.logger?.debug("Mongoose session closed");
     }
   }
 
@@ -106,7 +93,7 @@ export default class AuthServices {
       ctx,
     );
 
-   if (!session.isValid || new Date() > session.expiresAt) {
+    if (!session.isValid || new Date() > session.expiresAt) {
       ctx?.logger?.warn(
         { sessionId: session._id },
         "Refresh failed: Session expired or invalid",
