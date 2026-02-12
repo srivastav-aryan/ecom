@@ -115,8 +115,9 @@ export default class AuthServices {
 
     const user = await this.userServices.findUserByIdForAuth(decoded._id, ctx);
 
-    await this.sessionService.revokeSession(session.id, ctx);
-
+    if (session) {
+      await this.sessionService.revokeSession(session.id, ctx);
+    }
     return await this._generateTokenAndAssignSession(user, ctx);
   }
 
