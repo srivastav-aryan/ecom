@@ -1,11 +1,11 @@
 import { userLoginInput, userRegistrationInput } from "@e-com/shared/schemas";
 import { ApiError } from "../utils/applevel.utils.js";
 import { IUser } from "../models/user.model.js";
-import mongoose from "mongoose";
 import { TokenServiceInterface } from "../interfaces/services/token.service.interface.js";
 import { SessionServiceInterface } from "../interfaces/services/session.service.interface.js";
 import { UserServiceInterface } from "../interfaces/services/user.service.interface.js";
 import { RequestContext } from "../types/request-context.js";
+import { authCache } from "../cache/auth.cache.js";
 
 export default class AuthServices {
   constructor(
@@ -93,6 +93,18 @@ export default class AuthServices {
       ctx,
     );
 
+    // REUSE DETECTION: Token is a valid JWT but session is gone
+    // This means someone already used this token → compromise
+    if (!session) {
+      ctx?.logger?.error(
+        { userId: decoded._id },
+        "Refresh token reuse detected — revoking all sessions",
+      );
+      await this.sessionService.revokeAllSessions(decoded._id, ctx);
+      authCache.delete(decoded._id);
+      throw new ApiError(401, "Security alert: all sessions revoked");
+    }
+
     if (!session.isValid || new Date() > session.expiresAt) {
       ctx?.logger?.warn(
         { sessionId: session._id },
@@ -119,6 +131,10 @@ export default class AuthServices {
       ctx,
     );
 
-    await this.sessionService.revokeSession(session.id, ctx);
+    if (session) {
+      await this.sessionService.revokeSession(session.id, ctx);
+    }
+
+    ctx?.logger?.info("Session deleted, user logged out from one device");
   }
 }

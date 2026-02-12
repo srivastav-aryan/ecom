@@ -123,9 +123,6 @@ export const authControllerCreator = (
           req.body,
           ctx,
         );
-        if (!oldRefToken) {
-          throw new ApiError(401, "Refresh Token not provided");
-        }
 
         const { accessToken, refreshToken } = await authServices.refreshService(
           oldRefToken,

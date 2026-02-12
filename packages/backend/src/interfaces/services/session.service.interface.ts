@@ -10,7 +10,7 @@ export interface SessionServiceInterface {
     options?: { session: mongoose.ClientSession }
   ): Promise<void>;
 
-  findSessionByToken(refreshToken: string, ctx?: RequestContext): Promise<IUserSession >;
+  findSessionByToken(refreshToken: string, ctx?: RequestContext): Promise<IUserSession | null>;
 
   revokeSession(sessionId: string, ctx?: RequestContext): Promise<void>;
 

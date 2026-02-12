@@ -38,7 +38,7 @@ export class SessionService implements SessionServiceInterface {
 async findSessionByToken(
   refreshToken: string,
   ctx?: RequestContext,
-): Promise<IUserSession> {
+): Promise<IUserSession | null> {
   const hash = crypto
     .createHash("sha256")
     .update(refreshToken)
@@ -48,7 +48,7 @@ async findSessionByToken(
   
   if (!session) {
     ctx?.logger?.warn({ refreshTokenHash: hash }, "Session not found for token");
-    throw new ApiError(401, "Session not found");
+    return null
   }
   
   return session;

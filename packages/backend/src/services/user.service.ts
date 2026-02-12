@@ -1,7 +1,6 @@
 import { userRegistrationInput } from "@e-com/shared/schemas";
 import { IUser, User } from "../models/user.model.js";
 import { ApiError } from "../utils/applevel.utils.js";
-import mongoose from "mongoose";
 import { UserServiceInterface } from "../interfaces/services/user.service.interface.js";
 import { RequestContext } from "../types/request-context.js";
 
