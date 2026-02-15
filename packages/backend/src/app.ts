@@ -105,8 +105,8 @@ export const createApp = (): express.Application => {
     });
   });
 
-  // user endpoint for REST API
-  app.use("/api/user", authRouter);
+  // Auth endpoint for REST API
+  app.use("/api/auth", authRouter);
 
   //global error handler
   app.use(globalErrorHandler);
