@@ -1,5 +1,6 @@
 // Following factory function pattern instead of classes
 import { NextFunction, Request, Response } from "express";
+import { cookieOptions } from "../utils/cookie.utils.js";
 import { env } from "../config/env.js";
 import { ApiError } from "../utils/applevel.utils.js";
 import { TokenServiceInterface } from "../interfaces/services/token.service.interface.js";
@@ -48,10 +49,8 @@ export const authControllerCreator = (
         );
 
         res.cookie("refreshToken", refreshToken, {
-          httpOnly: true,
-          secure: env.NODE_ENV === "production",
-          sameSite: "strict",
-          maxAge: parseInt(env.REFRESH_TOKEN_EXPIRY),
+          ...cookieOptions,
+          maxAge: parseInt(env.REFRESH_TOKEN_EXPIRY) || 7 * 24 * 60 * 60 * 1000,
         });
 
         res.status(201).json({
@@ -93,9 +92,7 @@ export const authControllerCreator = (
         );
 
         res.cookie("refreshToken", refreshToken, {
-          httpOnly: true,
-          secure: env.NODE_ENV === "production",
-          sameSite: "strict",
+          ...cookieOptions,
           path: "/auth/refresh",
           maxAge:
             parseInt(env.REFRESH_TOKEN_EXPIRY, 10) || 7 * 24 * 60 * 60 * 1000,
@@ -130,9 +127,7 @@ export const authControllerCreator = (
         );
 
         res.cookie("refreshToken", refreshToken, {
-          httpOnly: true,
-          secure: env.NODE_ENV === "production",
-          sameSite: "strict",
+          ...cookieOptions,
           path: "/auth/refresh",
           maxAge: 7 * 24 * 60 * 60 * 1000,
         });
@@ -159,9 +154,7 @@ export const authControllerCreator = (
         await authServices.deleteOneSession(refreshToken);
 
         res.clearCookie("refreshToken", {
-          httpOnly: true,
-          secure: env.NODE_ENV === "production",
-          sameSite: "strict",
+          ...cookieOptions,
           path: "/auth/refresh",
         });
 

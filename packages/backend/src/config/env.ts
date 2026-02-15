@@ -16,6 +16,7 @@ const processEnvSchema = z.object({
   REFRESH_TOKEN_EXPIRY: z.string().default("7d"),
   LOGIN_WINDOW_MS: z.string().default("10000"),
   LOGIN_MAX_ATTEMPTS: z.string().default("5"),
+  CORS_ORIGIN: z.string()
 });
 
 const result = processEnvSchema.safeParse(process.env);

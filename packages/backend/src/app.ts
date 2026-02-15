@@ -8,6 +8,8 @@ import { randomUUID } from "node:crypto";
 import { authRouter } from "./routes/auth.routes.js";
 import { globalErrorHandler } from "./middlewares/globalErrorHandler.js";
 import cookieParser from "cookie-parser";
+import cors from 'cors'
+
 
 const setupMiddleWares = (app: express.Application): void => {
   app.use(
@@ -15,6 +17,12 @@ const setupMiddleWares = (app: express.Application): void => {
       contentSecurityPolicy: env.NODE_ENV == "development" ? false : undefined,
     }),
   );
+
+  app.use(cors({
+    origin: env.CORS_ORIGIN,
+    credentials: true,
+    optionsSuccessStatus: 200
+  }))
 
   app.use(compression());
 
