@@ -12,6 +12,7 @@ function Header({ navData }: HeaderProps) {
   return (
     <header role="banner" className="border-b border-black">
       <div className="px-4 sm:px-6 lg:px-11 py-3">
+
         <div className="flex items-center justify-between">
           <div className="lg:hidden flex">
             <MobileNav navItems={navData.navItems} />
