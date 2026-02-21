@@ -110,7 +110,7 @@ export async function fetchClient(
 
         accessToken = newToken;
 
-        processFailedReqQueue(null, accessToken);
+        processFailedReqQueue(null, newToken);
 
         return fetchClient(input, { ...options, _retry: true });
 
