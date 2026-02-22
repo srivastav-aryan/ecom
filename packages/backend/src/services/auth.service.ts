@@ -118,7 +118,7 @@ export default class AuthServices {
     if (session) {
       await this.sessionService.revokeSession(session.id, ctx);
     }
-    return await this._generateTokenAndAssignSession(user, ctx);
+    return { ...(await this._generateTokenAndAssignSession(user, ctx)), user};
   }
 
   async deleteOneSession(refreshToken: string, ctx?: RequestContext) {

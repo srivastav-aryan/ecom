@@ -121,7 +121,7 @@ export const authControllerCreator = (
           ctx,
         );
 
-        const { accessToken, refreshToken } = await authServices.refreshService(
+        const { accessToken, refreshToken, user } = await authServices.refreshService(
           oldRefToken,
           ctx,
         );
@@ -134,7 +134,7 @@ export const authControllerCreator = (
 
         res.status(200).json({
           success: true,
-          data: { accessToken },
+          data: { accessToken , user},
           message: "Token refreshed successfully",
         });
       } catch (error) {
