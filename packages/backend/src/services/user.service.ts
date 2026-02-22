@@ -28,7 +28,7 @@ export default class UserServices implements UserServiceInterface {
   ): Promise<IUser> {
     ctx?.logger?.debug({ userId }, "Looking up user by ID for auth");
     const user = await User.findById(userId).select(
-      "+refreshToken +refreshTokenVersion +password +isActive",
+      "+isActive",
     );
 
     if (!user) {
