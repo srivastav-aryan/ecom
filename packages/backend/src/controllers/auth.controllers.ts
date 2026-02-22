@@ -7,6 +7,7 @@ import { TokenServiceInterface } from "../interfaces/services/token.service.inte
 import { RequestContext } from "../types/request-context.js";
 import pino from "pino";
 import { IAuthService } from "../interfaces/services/auth.service.interface.js";
+import { userForAuthStatus } from "@e-com/shared/types";
 
 export interface RateLimiter {
   checkRateLimit: (
@@ -126,6 +127,14 @@ export const authControllerCreator = (
           ctx,
         );
 
+        const userForAuth: userForAuthStatus = {
+         email: user.email,
+         firstname: user.firstname,
+         lastname: user.lastname,
+         role: user.role,
+         permissions: user.permissions,
+        }
+
         res.cookie("refreshToken", refreshToken, {
           ...cookieOptions,
           path: "/auth/refresh",
@@ -134,7 +143,7 @@ export const authControllerCreator = (
 
         res.status(200).json({
           success: true,
-          data: { accessToken , user},
+          data: { accessToken , userForAuth},
           message: "Token refreshed successfully",
         });
       } catch (error) {

@@ -80,7 +80,6 @@ export default class AuthServices {
       throw new ApiError(400, "Invalid credentials");
     }
 
-    ctx?.logger?.info({ userId: user.id }, "Login successful");
 
     return this._generateTokenAndAssignSession(user, ctx);
   }
