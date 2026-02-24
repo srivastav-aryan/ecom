@@ -6,8 +6,9 @@ import { SessionServiceInterface } from "../interfaces/services/session.service.
 import { UserServiceInterface } from "../interfaces/services/user.service.interface.js";
 import { RequestContext } from "../types/request-context.js";
 import { authCache } from "../cache/auth.cache.js";
+import { IAuthService } from "../interfaces/services/auth.service.interface.js";
 
-export default class AuthServices {
+export default class AuthServices implements  IAuthService{
   constructor(
     private userServices: UserServiceInterface,
     private sessionService: SessionServiceInterface,
@@ -55,7 +56,7 @@ export default class AuthServices {
 
       ctx?.logger?.info({ userId: regUser.id }, "User registration successful");
 
-      return tokens;
+      return {...tokens , regUser};
     } catch (error: any) {
       ctx?.logger?.error(
         { err: error, email: userInput.email },
@@ -80,8 +81,9 @@ export default class AuthServices {
       throw new ApiError(400, "Invalid credentials");
     }
 
+     ctx?.logger?.info({ userId: user.id }, "Login successful");
 
-    return this._generateTokenAndAssignSession(user, ctx);
+    return { ...(await this._generateTokenAndAssignSession(user, ctx)), user};
   }
 
   async refreshService(oldRefToken: string, ctx?: RequestContext) {

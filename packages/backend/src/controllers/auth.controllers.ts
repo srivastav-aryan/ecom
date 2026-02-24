@@ -44,10 +44,18 @@ export const authControllerCreator = (
       const ctx = createCtx(req, "register");
 
       try {
-        const { accessToken, refreshToken } = await authServices.registerUser(
+        const { accessToken, refreshToken, regUser } = await authServices.registerUser(
           req.body,
           ctx,
         );
+
+        const userForAuth: userForAuthStatus = {
+         email: regUser.email,
+         firstname: regUser.firstname,
+         lastname: regUser.lastname,
+         role: regUser.role,
+         permissions: regUser.permissions,
+        }
 
         res.cookie("refreshToken", refreshToken, {
           ...cookieOptions,
@@ -56,7 +64,7 @@ export const authControllerCreator = (
 
         res.status(201).json({
           success: true,
-          data: { accessToken },
+          data: { accessToken, userForAuth },
           message: "User Registered Successfully",
         });
       } catch (error) {
@@ -87,10 +95,18 @@ export const authControllerCreator = (
           );
         }
 
-        const { accessToken, refreshToken } = await authServices.loginUser(
+        const { accessToken, refreshToken, user } = await authServices.loginUser(
           req.body,
           ctx,
         );
+
+        const userForAuth: userForAuthStatus = {
+         email: user.email,
+         firstname: user.firstname,
+         lastname: user.lastname,
+         role: user.role,
+         permissions: user.permissions,
+        }
 
         res.cookie("refreshToken", refreshToken, {
           ...cookieOptions,
@@ -101,7 +117,7 @@ export const authControllerCreator = (
 
         res.status(200).json({
           success: true,
-          data: { accessToken, refreshToken },
+         data: { accessToken, userForAuth },
           message: "User logged in successfully",
         });
       } catch (error) {

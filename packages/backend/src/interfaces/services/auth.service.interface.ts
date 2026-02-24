@@ -6,11 +6,11 @@ export interface IAuthService {
   registerUser: (
     input: userRegistrationInput,
     ctx?: RequestContext,
-  ) => Promise<{ accessToken: string; refreshToken: string }>;
+  ) => Promise<{ accessToken: string; refreshToken: string , regUser: IUser}>;
   loginUser: (
     input: userLoginInput,
     ctx?: RequestContext,
-  ) => Promise<{ accessToken: string; refreshToken: string }>;
+  ) => Promise<{ accessToken: string; refreshToken: string , user: IUser}>;
   refreshService: (
     reftoken: string,
     ctx?: RequestContext,
