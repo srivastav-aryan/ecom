@@ -7,7 +7,7 @@ import { TokenServiceInterface } from "../interfaces/services/token.service.inte
 import { RequestContext } from "../types/request-context.js";
 import pino from "pino";
 import { IAuthService } from "../interfaces/services/auth.service.interface.js";
-import { userForAuthStatus } from "@e-com/shared/types";
+import { userForAuthStatus , responseForAuth} from "@e-com/shared/types";
 
 export interface RateLimiter {
   checkRateLimit: (
@@ -44,18 +44,20 @@ export const authControllerCreator = (
       const ctx = createCtx(req, "register");
 
       try {
-        const { accessToken, refreshToken, regUser } = await authServices.registerUser(
+        const { accessToken, refreshToken, user } = await authServices.registerUser(
           req.body,
           ctx,
         );
 
         const userForAuth: userForAuthStatus = {
-         email: regUser.email,
-         firstname: regUser.firstname,
-         lastname: regUser.lastname,
-         role: regUser.role,
-         permissions: regUser.permissions,
+         email: user.email,
+         firstname: user.firstname,
+         lastname: user.lastname,
+         role: user.role,
+         permissions: user.permissions,
         }
+
+        const responseData: responseForAuth = { accessToken, user: userForAuth };
 
         res.cookie("refreshToken", refreshToken, {
           ...cookieOptions,
@@ -64,7 +66,7 @@ export const authControllerCreator = (
 
         res.status(201).json({
           success: true,
-          data: { accessToken, userForAuth },
+          data: responseData,
           message: "User Registered Successfully",
         });
       } catch (error) {
@@ -115,9 +117,11 @@ export const authControllerCreator = (
             parseInt(env.REFRESH_TOKEN_EXPIRY, 10) || 7 * 24 * 60 * 60 * 1000,
         });
 
+        const responseData: responseForAuth = { accessToken, user: userForAuth };
+
         res.status(200).json({
           success: true,
-         data: { accessToken, userForAuth },
+          data: responseData,
           message: "User logged in successfully",
         });
       } catch (error) {
@@ -157,9 +161,11 @@ export const authControllerCreator = (
           maxAge: 7 * 24 * 60 * 60 * 1000,
         });
 
+        const responseData: responseForAuth = { accessToken, user: userForAuth };
+
         res.status(200).json({
           success: true,
-          data: { accessToken , userForAuth},
+          data: responseData,
           message: "Token refreshed successfully",
         });
       } catch (error) {

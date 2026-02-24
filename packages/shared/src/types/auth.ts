@@ -7,3 +7,8 @@ export type userForAuthStatus = {
   role: UserRole,
   permissions: Permission[],
 }
+
+export type responseForAuth = {
+  accessToken: string,
+  user: userForAuthStatus
+}

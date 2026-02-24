@@ -46,17 +46,17 @@ export default class AuthServices implements  IAuthService{
 
     try {
       ctx?.logger?.debug("starting the process for creating user in database");
-      const regUser = await this.userServices.createUser(userInput, ctx);
+     const user = await this.userServices.createUser(userInput, ctx);
 
       ctx?.logger?.debug(
-        { userId: regUser.id },
+        { userId: user.id },
         "User created, generating tokens",
       );
-      const tokens = await this._generateTokenAndAssignSession(regUser, ctx);
+      const tokens = await this._generateTokenAndAssignSession(user, ctx);
 
-      ctx?.logger?.info({ userId: regUser.id }, "User registration successful");
+      ctx?.logger?.info({ userId: user.id }, "User registration successful");
 
-      return {...tokens , regUser};
+      return {...tokens , user};
     } catch (error: any) {
       ctx?.logger?.error(
         { err: error, email: userInput.email },
