@@ -1,7 +1,7 @@
-
-export interface FetchOptions extends RequestInit {
+export interface FetchOptions extends Omit<RequestInit, "body"> {
   timeOut?: number;
   _retry?: boolean;
+  body?: any;
 }
 
 let failedReqQueue: Array<{
