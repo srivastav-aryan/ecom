@@ -76,7 +76,7 @@ export async function fetchClient(
     // ─────────────────────────────
     // Handle 401 (only once)
     // ─────────────────────────────
-    if (response.status === 401 && !isRetry) {
+    if (response.status === 401 && !isRetry && !input.includes("/auth/refresh")) {
 
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
