@@ -1,15 +1,17 @@
 import { Outlet, useLoaderData } from "react-router-dom";
 import Header from "@/components/Header/Header";
-import type { NavigationData } from "@e-com/shared/types";
+import { AuthProvider } from "@/features/auth/context/AuthContext";
 
 function RootLayout() {
-  const navData: NavigationData = useLoaderData();
-  
+  const { navData, user } = useLoaderData();
+
   return (
-    <main>
-      <Header navData={navData} />
-      <Outlet />
-    </main>
+    <AuthProvider initialState={user}>
+      <main>
+        <Header navData={navData} />
+        <Outlet />
+      </main>
+    </AuthProvider>
   );
 }
 

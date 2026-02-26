@@ -3,6 +3,8 @@ import GlobalErrorBoundary from "../errors/GlobalErrorBoundary";
 import RootLayout from "../layouts/RootLayout";
 import Home from "../pages/Home";
 import { rootLoader } from "./loaders/rootLoader";
+import RegisterPage from "@/pages/auth/RegisterPage";
+import LoginPage from "@/pages/auth/LoginPage";
 
 
 
@@ -24,6 +26,19 @@ export const router = createBrowserRouter([
         index: true,
         element: <Home />,
       },
+      {
+       path: "auth",
+       children: [
+        {
+          path: "register",
+          element: <RegisterPage />
+        },
+        {
+          path: "login",
+          element: <LoginPage />
+        }
+       ]
+      }
     ],
   },
 ]);
