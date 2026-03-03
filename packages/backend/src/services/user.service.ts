@@ -62,37 +62,33 @@ export default class UserServices implements UserServiceInterface {
   ): Promise<IUser> {
     const { email, lastname, firstname, password } = input;
 
-    ctx?.logger?.debug({ email }, "Checking if user already exists");
-
-    const query = User.findOne({ email }).lean();
-
-    const userExists = await query;
-
-    if (userExists) {
-      ctx?.logger?.warn(
-        { email },
-        "Attempt to register with an already registered email",
-      );
-      throw new ApiError(
-        409,
-        "The email is already registered. Please login or use a new email",
-      );
-    }
-
     ctx?.logger?.debug({ email }, "Creating new user in database");
-    const [newUser] = await User.create(
-      [
+
+    try {
+      const [newUser] = await User.create([
         {
           email,
           password,
           firstname,
           lastname,
         },
-      ],
-    );
+      ]);
 
-    ctx?.logger?.info({ userId: newUser.id }, "New user created successfully");
+      ctx?.logger?.info({ userId: newUser.id }, "New user created successfully");
 
-    return newUser;
+      return newUser;
+    } catch (error: any) {
+      if (error.code === 11000) {
+        ctx?.logger?.warn(
+          { email },
+          "Attempt to register with an already registered email",
+        );
+        throw new ApiError(
+          409,
+          "The email is already registered. Please login or use a new email",
+        );
+      }
+      throw error;
+    }
   }
 }
