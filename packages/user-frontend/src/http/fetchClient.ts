@@ -1,3 +1,5 @@
+import type { ErrorResponse } from "@e-com/shared/types";
+
 export interface FetchOptions extends Omit<RequestInit, "body"> {
   timeOut?: number;
   _retry?: boolean;
@@ -28,10 +30,7 @@ function processFailedReqQueue(error: any, newToken: string | null) {
   failedReqQueue = [];
 }
 
-export async function fetchClient(
-  input: string,
-  options: FetchOptions = {}
-) {
+export async function fetchClient(input: string, options: FetchOptions = {}) {
   const baseUrl = import.meta.env.VITE_API_BASE_URL;
   const url = `${baseUrl}${input}`;
 
@@ -76,8 +75,11 @@ export async function fetchClient(
     // ─────────────────────────────
     // Handle 401 (only once)
     // ─────────────────────────────
-    if (response.status === 401 && !isRetry && !input.includes("/auth/refresh")) {
-
+    if (
+      response.status === 401 &&
+      !isRetry &&
+      !input.includes("/auth/refresh")
+    ) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedReqQueue.push({
@@ -113,7 +115,6 @@ export async function fetchClient(
         processFailedReqQueue(null, newToken);
 
         return fetchClient(input, { ...options, _retry: true });
-
       } catch (err) {
         processFailedReqQueue(err, null);
         accessToken = null;
@@ -124,11 +125,27 @@ export async function fetchClient(
     }
 
     if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
+      let errorMessage = `HTTP ${response.status}`;
+      let errorData: ErrorResponse | null = null;
+
+      try {
+        errorData = await response.json() as ErrorResponse;
+        errorMessage = errorData?.message || errorMessage;
+      } catch {
+        try {
+          const text = await response.text();
+          if (text) errorMessage = text;
+        } catch {}
+      }
+
+      const error = new Error(errorMessage);
+      (error as any).status = response.status;
+      (error as any).data = errorData;
+      throw error;
     }
 
-    return await response.json();
-
+    const text = await response.text();
+    return text ? JSON.parse(text) : null;
   } catch (error: any) {
     if (error.name === "AbortError") {
       throw new Error("Request timed out");
@@ -139,4 +156,3 @@ export async function fetchClient(
     clearTimeout(timeoutId);
   }
 }
-

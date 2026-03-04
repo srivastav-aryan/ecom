@@ -3,6 +3,7 @@ import { ZodError } from "zod";
 import { ApiError } from "../utils/applevel.utils.js";
 import { env } from "../config/env.js";
 import { JWTError } from "../interfaces/services/token.service.interface.js";
+import { ErrorResponse } from "@e-com/shared/types";
 
 // globall error handler
 export const globalErrorHandler = (
@@ -41,12 +42,12 @@ export const globalErrorHandler = (
     `error occured with statusCode:- ${statusCode} and message:-${message}`
   );
   
-
-  res.status(statusCode).json({
+  const errorResponse: ErrorResponse = {
     success: false,
     message,
     code,
     ...(errors && { errors: errors }),
     ...(env.NODE_ENV === "development" ? { stack: err.stack } : {}),
-  });
+  }
+  res.status(statusCode).json(errorResponse);
 };
