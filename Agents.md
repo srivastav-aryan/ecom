@@ -57,3 +57,4 @@ The frontend is a modern React SPA using Vite, Tailwind CSS, and DOM Routing.
 - **Rule:** Use explicit type definitions. Avoid `any` unless absolutely necessary (and document why if used).
 - **Rule:** Stick to `const` and `let`.
 - **Rule:** All endpoints and data inputs MUST be validated at the boundary using `Zod` before processing.
+ 

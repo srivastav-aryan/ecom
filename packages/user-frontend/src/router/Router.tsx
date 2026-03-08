@@ -5,6 +5,8 @@ import Home from "../pages/Home";
 import { rootLoader } from "./loaders/rootLoader";
 import RegisterPage from "@/pages/auth/RegisterPage";
 import LoginPage from "@/pages/auth/LoginPage";
+import registerAction from "@/features/auth/actions/registerAction";
+import loginAction from "@/features/auth/actions/loginAction";
 
 
 
@@ -31,11 +33,13 @@ export const router = createBrowserRouter([
        children: [
         {
           path: "register",
-          element: <RegisterPage />
+          element: <RegisterPage />,
+          action: registerAction
         },
         {
           path: "login",
-          element: <LoginPage />
+          element: <LoginPage />,
+          action: loginAction
         }
        ]
       }
