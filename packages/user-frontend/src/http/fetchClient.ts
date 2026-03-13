@@ -129,13 +129,13 @@ export async function fetchClient(input: string, options: FetchOptions = {}) {
       let errorData: ErrorResponse | null = null;
 
       try {
-        errorData = await response.json() as ErrorResponse;
+        errorData = (await response.json()) as ErrorResponse;
         errorMessage = errorData?.message || errorMessage;
       } catch {
         try {
           const text = await response.text();
           if (text) errorMessage = text;
-        } catch {}
+        } catch { }
       }
 
       const error = new Error(errorMessage);
