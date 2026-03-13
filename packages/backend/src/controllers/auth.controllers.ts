@@ -74,7 +74,8 @@ export const authControllerCreator = (
 
         res.cookie("refreshToken", refreshToken, {
           ...cookieOptions,
-          maxAge: parseInt(env.REFRESH_TOKEN_EXPIRY) || 7 * 24 * 60 * 60 * 1000,
+          path: "/api/auth/refresh",
+          maxAge: 7 * 24 * 60 * 60 * 1000,
         });
 
         res.status(201).json({
@@ -140,12 +141,10 @@ export const authControllerCreator = (
 
         res.cookie("refreshToken", refreshToken, {
           ...cookieOptions,
-          path: "/auth/refresh",
-          maxAge:
-            parseInt(env.REFRESH_TOKEN_EXPIRY, 10) || 7 * 24 * 60 * 60 * 1000,
-        });
 
-        const responseData: responseForAuth = { accessToken, user: userForAuth };
+          path: "/api/auth/refresh",
+          maxAge: 7 * 24 * 60 * 60 * 1000,
+        });
 
         res.status(200).json({
           success: true,
@@ -193,7 +192,7 @@ export const authControllerCreator = (
 
         res.cookie("refreshToken", refreshToken, {
           ...cookieOptions,
-          path: "/auth/refresh",
+          path: "/api/auth/refresh",
           maxAge: 7 * 24 * 60 * 60 * 1000,
         });
 
