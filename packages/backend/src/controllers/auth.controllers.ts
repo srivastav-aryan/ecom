@@ -1,13 +1,13 @@
 // Following factory function pattern instead of classes
 import { NextFunction, Request, Response } from "express";
 import { cookieOptions } from "../utils/cookie.utils.js";
-import { env } from "../config/env.js";
 import { ApiError } from "../utils/applevel.utils.js";
 import { TokenServiceInterface } from "../interfaces/services/token.service.interface.js";
+import { AuthCacheEntry, authCache } from "../cache/auth.cache.js";
 import { RequestContext } from "../types/request-context.js";
 import pino from "pino";
 import { IAuthService } from "../interfaces/services/auth.service.interface.js";
-import { userForAuthStatus , responseForAuth} from "@e-com/shared/types";
+import { userForAuthStatus, responseForAuth } from "@e-com/shared/types";
 
 export interface RateLimiter {
   checkRateLimit: (
@@ -44,20 +44,33 @@ export const authControllerCreator = (
       const ctx = createCtx(req, "register");
 
       try {
-        const { accessToken, refreshToken, user } = await authServices.registerUser(
-          req.body,
-          ctx,
-        );
+        const { accessToken, refreshToken, user } =
+          await authServices.registerUser(req.body, ctx);
 
+        // preparing the user data for auth caching
+        const authCacheEntry: AuthCacheEntry = {
+          role: user.role,
+          permissions: user.permissions,
+          isActive: user.isActive ?? true,
+          expiresAt: Date.now() + 5 * 60 * 1000, // 5 minutes TTL
+        };
+
+        // preparing the user data for auth response for the client state
         const userForAuth: userForAuthStatus = {
-         email: user.email,
-         firstname: user.firstname,
-         lastname: user.lastname,
-         role: user.role,
-         permissions: user.permissions,
-        }
+          email: user.email,
+          firstname: user.firstname,
+          lastname: user.lastname,
+          role: user.role,
+          permissions: user.permissions,
+        };
 
-        const responseData: responseForAuth = { accessToken, user: userForAuth };
+        // setting the auth cache
+        authCache.set(user.id, authCacheEntry);
+
+        const responseData: responseForAuth = {
+          accessToken,
+          user: userForAuth,
+        };
 
         res.cookie("refreshToken", refreshToken, {
           ...cookieOptions,
@@ -97,18 +110,33 @@ export const authControllerCreator = (
           );
         }
 
-        const { accessToken, refreshToken, user } = await authServices.loginUser(
-          req.body,
-          ctx,
-        );
+        const { accessToken, refreshToken, user } =
+          await authServices.loginUser(req.body, ctx);
 
+        // preparing the user data for auth caching
+        const authCacheEntry: AuthCacheEntry = {
+          role: user.role,
+          permissions: user.permissions,
+          isActive: user.isActive ?? true,
+          expiresAt: Date.now() + 5 * 60 * 1000, // 5 minutes TTL
+        };
+        
+        authCache.set(user.id, authCacheEntry);
+
+        // preparing the user data for auth response for the client state
         const userForAuth: userForAuthStatus = {
-         email: user.email,
-         firstname: user.firstname,
-         lastname: user.lastname,
-         role: user.role,
-         permissions: user.permissions,
-        }
+          email: user.email,
+          firstname: user.firstname,
+          lastname: user.lastname,
+          role: user.role,
+          permissions: user.permissions,
+        };
+
+
+        const responseData: responseForAuth = {
+          accessToken,
+          user: userForAuth,
+        };
 
         res.cookie("refreshToken", refreshToken, {
           ...cookieOptions,
@@ -142,18 +170,26 @@ export const authControllerCreator = (
           ctx,
         );
 
-        const { accessToken, refreshToken, user } = await authServices.refreshService(
-          oldRefToken,
-          ctx,
-        );
+        const { accessToken, refreshToken, user } =
+          await authServices.refreshService(oldRefToken, ctx);
+
+        // preparing the user data for auth caching
+        const authCacheEntry: AuthCacheEntry = {
+          role: user.role,
+          permissions: user.permissions,
+          isActive: user.isActive ?? true,
+          expiresAt: Date.now() + 5 * 60 * 1000, // 5 minutes TTL
+        };
+        
+        authCache.set(user.id, authCacheEntry);
 
         const userForAuth: userForAuthStatus = {
-         email: user.email,
-         firstname: user.firstname,
-         lastname: user.lastname,
-         role: user.role,
-         permissions: user.permissions,
-        }
+          email: user.email,
+          firstname: user.firstname,
+          lastname: user.lastname,
+          role: user.role,
+          permissions: user.permissions,
+        };
 
         res.cookie("refreshToken", refreshToken, {
           ...cookieOptions,
@@ -161,7 +197,10 @@ export const authControllerCreator = (
           maxAge: 7 * 24 * 60 * 60 * 1000,
         });
 
-        const responseData: responseForAuth = { accessToken, user: userForAuth };
+        const responseData: responseForAuth = {
+          accessToken,
+          user: userForAuth,
+        };
 
         res.status(200).json({
           success: true,
