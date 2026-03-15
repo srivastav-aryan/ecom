@@ -1,12 +1,20 @@
 import { createBrowserRouter } from "react-router-dom";
+import { Suspense, lazy } from "react";
 import GlobalErrorBoundary from "../errors/GlobalErrorBoundary";
 import RootLayout from "../layouts/RootLayout";
-import Home from "../pages/Home";
 import { rootLoader } from "./loaders/rootLoader";
-import RegisterPage from "@/pages/auth/RegisterPage";
-import LoginPage from "@/pages/auth/LoginPage";
 import registerAction from "@/features/auth/actions/registerAction";
 import loginAction from "@/features/auth/actions/loginAction";
+
+import Home from "../pages/Home";
+const RegisterPage = lazy(() => import("@/pages/auth/RegisterPage"));
+const LoginPage = lazy(() => import("@/pages/auth/LoginPage"));
+
+const PageLoader = () => (
+  <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
+    Loading...
+  </div>
+);
 
 
 
@@ -34,12 +42,12 @@ export const router = createBrowserRouter([
        children: [
         {
           path: "register",
-          element: <RegisterPage />,
+          element: <Suspense fallback={<PageLoader />}><RegisterPage /></Suspense>,
           action: registerAction
         },
         {
           path: "login",
-          element: <LoginPage />,
+          element: <Suspense fallback={<PageLoader />}><LoginPage /></Suspense>,
           action: loginAction
         }
        ]
