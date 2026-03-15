@@ -7,21 +7,25 @@ export const rootLoader = async (): Promise<{
   navData: NavigationData;
   user: userForAuthStatus | null;
 }> => {
+  // Fire both requests in parallel — they have no dependency on each other
+  const [authResult, navResult] = await Promise.allSettled([
+    authServices.refresh(),
+    getNaviData(),
+  ]);
+
+  // Auth: a failed refresh just means unauthenticated — not an error
   let user: userForAuthStatus | null = null;
-  try {
-    // 1. Silent auth bootstrap using HttpOnly cookie
-    const data = await authServices.refresh();
-    user = data.user;
-    setAccessToken(data.accessToken);
-  } catch (err) {
-    // If refresh fails (no session/expired), user remains null
+  if (authResult.status === "fulfilled") {
+    user = authResult.value.user;
+    setAccessToken(authResult.value.accessToken);
+  } else {
     setAccessToken(null);
   }
-  try {
-    // 2. Fetch navigation/layout data concurrently or sequentially
-    const navData = await getNaviData();
-    return { navData, user };
-  } catch (error: unknown) {
-    throw new Error("getNaviData error", { cause: error });
+
+  // Nav: a failure here is unrecoverable — throw so the error boundary catches it
+  if (navResult.status === "rejected") {
+    throw new Error("getNaviData error", { cause: navResult.reason });
   }
+
+  return { navData: navResult.value, user };
 };
