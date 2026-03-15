@@ -5,8 +5,10 @@ import { AuthProvider } from "@/features/auth/context/AuthContext";
 function RootLayout() {
   const { navData, user } = useLoaderData();
 
+  let authKey = user ? user.email : "guest"
+
   return (
-    <AuthProvider initialState={user}>
+    <AuthProvider initialState={user} key={authKey}>
       <main>
         <Header navData={navData} />
         <Outlet />
