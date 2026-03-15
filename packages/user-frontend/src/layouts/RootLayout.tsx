@@ -1,19 +1,14 @@
-import { Outlet, useLoaderData } from "react-router-dom";
+import { Outlet, useRouteLoaderData } from "react-router-dom";
 import Header from "@/components/Header/Header";
-import { AuthProvider } from "@/features/auth/context/AuthContext";
 
 function RootLayout() {
-  const { navData, user } = useLoaderData();
-
-  let authKey = user ? user.email : "guest"
+  const { navData } = useRouteLoaderData("root");
 
   return (
-    <AuthProvider initialState={user} key={authKey}>
-      <main>
-        <Header navData={navData} />
-        <Outlet />
-      </main>
-    </AuthProvider>
+    <main>
+      <Header navData={navData} />
+      <Outlet />
+    </main>
   );
 }
 

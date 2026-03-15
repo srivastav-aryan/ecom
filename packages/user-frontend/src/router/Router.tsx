@@ -19,6 +19,7 @@ import loginAction from "@/features/auth/actions/loginAction";
 
 export const router = createBrowserRouter([
   {
+    id: "root",
     path: "/",
     element: <RootLayout />,
     errorElement: <GlobalErrorBoundary />,
