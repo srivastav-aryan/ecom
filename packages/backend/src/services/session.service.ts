@@ -3,7 +3,6 @@ import crypto from "crypto";
 import { userSession, IUserSession } from "../models/userSession.model.js";
 import { SessionServiceInterface } from "../interfaces/services/session.service.interface.js";
 import { RequestContext } from "../types/request-context.js";
-import { ApiError } from "../utils/applevel.utils.js";
 
 export class SessionService implements SessionServiceInterface {
   async createSession(
@@ -35,24 +34,22 @@ export class SessionService implements SessionServiceInterface {
     ctx?.logger?.debug({ userId }, "session created for this user");
   }
 
-async findSessionByToken(
-  refreshToken: string,
-  ctx?: RequestContext,
-): Promise<IUserSession | null> {
-  const hash = crypto
-    .createHash("sha256")
-    .update(refreshToken)
-    .digest("hex");
-  
-  const session = await userSession.findOne({ refreshTokenHash: hash });
-  
-  if (!session) {
-    ctx?.logger?.warn({ refreshTokenHash: hash }, "Session not found for token");
-    return null
+  async findSessionByToken(
+    refreshToken: string,
+    ctx?: RequestContext,
+  ): Promise<IUserSession | null> {
+    const hash = crypto.createHash("sha256").update(refreshToken).digest("hex");
+
+    const session = await userSession.findOne({ refreshTokenHash: hash });
+    if (!session) {
+      ctx?.logger?.warn(
+        { refreshTokenHash: hash },
+        "Session not found for token",
+      );
+      return null;
+    }
+    return session;
   }
-  
-  return session;
-}
 
   async revokeSession(sessionId: string, ctx?: RequestContext): Promise<void> {
     ctx?.logger?.debug({ sessionId }, "Revoking session");
@@ -60,7 +57,10 @@ async findSessionByToken(
     ctx?.logger?.debug({ sessionId }, "Session revoked");
   }
 
-  async revokeAllSessions(userId: string, ctx?: RequestContext): Promise<number> {
+  async revokeAllSessions(
+    userId: string,
+    ctx?: RequestContext,
+  ): Promise<number> {
     ctx?.logger?.info({ userId }, "Revoking all sessions for user");
 
     const result = await userSession.deleteMany({ userId });
