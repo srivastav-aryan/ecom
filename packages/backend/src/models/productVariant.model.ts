@@ -93,12 +93,17 @@ productVariantSchema.index({ sku: 1 }, { unique: true });
 productVariantSchema.index({ productId: 1 });
 
 // The Ultimate Filtering Index
-productVariantSchema.index({
-  productId: 1,
-  isActive: 1,
-  "attributes.name": 1,
-  "attributes.value": 1,
-});
+productVariantSchema.index(
+  {
+    productId: 1,
+    "attributes.name": 1,
+    "attributes.value": 1,
+  },
+  { partialFilterExpression: { isActive: true } },
+);
+
+// FOR ADMING QUERRYING
+productVariantSchema.index({ productId: 1, isActive: 1 });
 
 // Virtual field — computed on the fly, never stored in DB
 // Accessible as variant.availableStock in  code
