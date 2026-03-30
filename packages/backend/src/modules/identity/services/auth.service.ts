@@ -1,12 +1,12 @@
 import { userLoginInput, userRegistrationInput } from "@e-com/shared/schemas";
-import { ApiError } from "../utils/applevel.utils.js";
+import { ApiError } from "../../../shared/utils/applevel.utils.js";
 import { IUser } from "../models/user.model.js";
-import { TokenServiceInterface } from "../interfaces/services/token.service.interface.js";
-import { SessionServiceInterface } from "../interfaces/services/session.service.interface.js";
-import { UserServiceInterface } from "../interfaces/services/user.service.interface.js";
-import { RequestContext } from "../types/request-context.js";
+import { TokenServiceInterface } from "../interfaces/token.service.interface.js";
+import { SessionServiceInterface } from "../interfaces/session.service.interface.js";
+import { UserServiceInterface } from "../interfaces/user.service.interface.js";
+import { RequestContext } from "../../../shared/types/request-context.js";
 import { authCache } from "../cache/auth.cache.js";
-import { IAuthService } from "../interfaces/services/auth.service.interface.js";
+import { IAuthService } from "../interfaces/auth.service.interface.js";
 
 export default class AuthServices implements  IAuthService{
   constructor(

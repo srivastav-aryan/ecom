@@ -7,7 +7,7 @@ import { env } from "../config/env.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const pathToLog = path.join(__dirname, "..", "logs");
+const pathToLog = path.join(__dirname, "..", "..", "logs");
 
 export const logStream = createStream("access.log", {
   path: pathToLog,

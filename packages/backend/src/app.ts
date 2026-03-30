@@ -1,12 +1,12 @@
 import express, { NextFunction, Request, Response } from "express";
 import helmet from "helmet";
-import { env } from "./config/env.js";
+import { env } from "./shared/config/env.js";
 import compression from "compression";
 import morgan from "morgan";
-import { logger } from "./utils/logging.utils.js";
+import { logger } from "./shared/utils/logging.utils.js";
 import { randomUUID } from "node:crypto";
-import { authRouter } from "./routes/auth.routes.js";
-import { globalErrorHandler } from "./middlewares/globalErrorHandler.js";
+import { authRouter } from "./modules/identity/routes/auth.routes.js";
+import { globalErrorHandler } from "./shared/middlewares/globalErrorHandler.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 

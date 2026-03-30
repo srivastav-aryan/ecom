@@ -1,6 +1,6 @@
 import { userRegistrationInput, userLoginInput } from "@e-com/shared/schemas";
-import { RequestContext } from "../../types/request-context";
-import { IUser } from "../../models/user.model";
+import { RequestContext } from "../../../shared/types/request-context.js";
+import { IUser } from "../models/user.model.js";
 
 export interface IAuthService {
   registerUser: (

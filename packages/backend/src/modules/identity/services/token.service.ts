@@ -1,4 +1,4 @@
-import { env } from "../config/env.js";
+import { env } from "../../../shared/config/env.js";
 import jwt, { Secret, SignOptions } from "jsonwebtoken";
 import {
   AccessTokenPayload,
@@ -6,8 +6,8 @@ import {
   JWT_ERROR_CODES,
   JWTError,
   TokenServiceInterface,
-} from "../interfaces/services/token.service.interface.js";
-import { RequestContext } from "../types/request-context.js";
+} from "../interfaces/token.service.interface.js";
+import { RequestContext } from "../../../shared/types/request-context.js";
 
 // --------- SERVICE CLASS-------
 export class TokenService implements TokenServiceInterface {

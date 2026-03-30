@@ -1,9 +1,9 @@
 import { NextFunction, Request, Response } from "express";
 import { Types } from "mongoose";
 import { authCache } from "../cache/auth.cache.js";
-import { TokenServiceInterface, JWT_ERROR_CODES, JWTError } from "../interfaces/services/token.service.interface.js";
-import { UserServiceInterface } from "../interfaces/services/user.service.interface.js";
-import { RequestContext } from "../types/request-context.js";
+import { TokenServiceInterface, JWT_ERROR_CODES, JWTError } from "../interfaces/token.service.interface.js";
+import { UserServiceInterface } from "../interfaces/user.service.interface.js";
+import { RequestContext } from "../../../shared/types/request-context.js";
 
 export const auth_cache_TTL = 5 * 60 * 1000;
 

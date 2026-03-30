@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-import { connectDB } from "../src/config/dbconfig";
+import { connectDB } from "../src/shared/config/dbconfig";
 
 beforeAll(async () => {
   await connectDB();

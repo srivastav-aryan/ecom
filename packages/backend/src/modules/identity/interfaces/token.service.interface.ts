@@ -1,6 +1,6 @@
 import { UserRole } from "@e-com/shared/types";
 import { JwtPayload } from "jsonwebtoken";
-import { RequestContext } from "../../types/request-context.js";
+import { RequestContext } from "../../../shared/types/request-context.js";
 
 export interface AccessTokenPayload extends JwtPayload {
   _id: string;

@@ -1,5 +1,4 @@
 import { Types } from "mongoose";
-import type { IUser } from "../models/user.model";
 import type pino from "pino";
 import { UserRole } from "@e-com/shared/types";
 

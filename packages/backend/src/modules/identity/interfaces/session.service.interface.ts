@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
-import { IUserSession } from "../../models/userSession.model";
-import { RequestContext } from "../../types/request-context.js";
+import { IUserSession } from "../models/userSession.model.js";
+import { RequestContext } from "../../../shared/types/request-context.js";
 
 export interface SessionServiceInterface {
   createSession(

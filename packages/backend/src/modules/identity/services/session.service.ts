@@ -1,8 +1,8 @@
 import mongoose from "mongoose";
 import crypto from "crypto";
 import { userSession, IUserSession } from "../models/userSession.model.js";
-import { SessionServiceInterface } from "../interfaces/services/session.service.interface.js";
-import { RequestContext } from "../types/request-context.js";
+import { SessionServiceInterface } from "../interfaces/session.service.interface.js";
+import { RequestContext } from "../../../shared/types/request-context.js";
 
 export class SessionService implements SessionServiceInterface {
   async createSession(

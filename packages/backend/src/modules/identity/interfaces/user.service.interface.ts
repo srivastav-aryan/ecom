@@ -1,7 +1,7 @@
-import { IUser } from "../../models/user.model";
+import { IUser } from "../models/user.model.js";
 import { userRegistrationInput } from "@e-com/shared/schemas";
 import mongoose from "mongoose";
-import { RequestContext } from "../../types/request-context.js";
+import { RequestContext } from "../../../shared/types/request-context.js";
 
 export interface UserServiceInterface {
   findUserByEmail(email: string, ctx?: RequestContext): Promise<IUser | null>;

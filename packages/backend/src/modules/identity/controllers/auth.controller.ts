@@ -1,12 +1,12 @@
 // Following factory function pattern instead of classes
 import { NextFunction, Request, Response } from "express";
-import { cookieOptions } from "../utils/cookie.utils.js";
-import { ApiError } from "../utils/applevel.utils.js";
-import { TokenServiceInterface } from "../interfaces/services/token.service.interface.js";
+import { cookieOptions } from "../../../shared/utils/cookie.utils.js";
+import { ApiError } from "../../../shared/utils/applevel.utils.js";
+import { TokenServiceInterface } from "../interfaces/token.service.interface.js";
 import { AuthCacheEntry, authCache } from "../cache/auth.cache.js";
-import { RequestContext } from "../types/request-context.js";
+import { RequestContext } from "../../../shared/types/request-context.js";
 import pino from "pino";
-import { IAuthService } from "../interfaces/services/auth.service.interface.js";
+import { IAuthService } from "../interfaces/auth.service.interface.js";
 import { userForAuthStatus, responseForAuth } from "@e-com/shared/types";
 
 export interface RateLimiter {

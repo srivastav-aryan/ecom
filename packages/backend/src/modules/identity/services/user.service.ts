@@ -1,8 +1,8 @@
 import { userRegistrationInput } from "@e-com/shared/schemas";
 import { IUser, User } from "../models/user.model.js";
-import { ApiError } from "../utils/applevel.utils.js";
-import { UserServiceInterface } from "../interfaces/services/user.service.interface.js";
-import { RequestContext } from "../types/request-context.js";
+import { ApiError } from "../../../shared/utils/applevel.utils.js";
+import { UserServiceInterface } from "../interfaces/user.service.interface.js";
+import { RequestContext } from "../../../shared/types/request-context.js";
 
 export default class UserServices implements UserServiceInterface {
   async findUserByEmail(
