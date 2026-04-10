@@ -31,3 +31,7 @@ packages/*/dist/
 *.njsproj
 *.sln
 *.sw?
+
+# personal
+scope_plan.md
+
