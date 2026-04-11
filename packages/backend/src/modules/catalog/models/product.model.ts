@@ -68,7 +68,7 @@ const productSchema = new mongoose.Schema<IProduct>(
 
 
 
-productSchema.index({ slug: 1 });
+productSchema.index({ slug: 1 }, { unique: true }); // this is ok for single vendor, but not for multi-vendor
 productSchema.index({ category: 1 , isActive: 1});
 productSchema.index({ brand: 1 , isActive: 1});
 
