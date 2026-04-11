@@ -190,8 +190,8 @@ export const createCategorySchema = z.object({
         `Description cannot exceed ${MAX_DESCRIPTION_LENGTH} characters`,
       ),
 
-    // nullable + optional = can be null (root category) or absent (defaults to null in service).
-    parent: objectIdAtom.nullable().optional(),
+    // Explicitly require null for root category to ensure admin intent is captured accurately.
+    parent: objectIdAtom.nullable(),
   }),
 });
 
@@ -222,29 +222,6 @@ export type UpdateCategoryInput = z.infer<typeof updateCategorySchema>["body"];
 // =============================================================================
 // PRODUCT SCHEMAS
 // =============================================================================
-
-/**
- * Schema for POST /api/catalog/products
- *
- * category and brand are ObjectIds — the admin picks them from dropdowns
- * on the frontend. The frontend loaded these IDs from GET /categories and
- * GET /brands. The human sees "Men's Jeans" and "Levi's"; the form submits
- * the underlying _ids. The service then validates those IDs exist in DB.
- *
- * gstRate uses z.union of z.literal — NOT z.enum.
- * In Zod v4, z.enum() works for strings. For numeric literal unions, use
- * z.union([z.literal(5), z.literal(12)]). Using z.enum([5, 12]) would
- * cause internal string coercion, and your service would receive "5" (string)
- * instead of 5 (number) — a subtle type mismatch with your Mongoose enum.
- *
- * tags deduplication: ["Cotton", "cotton"] → ["cotton"] after toLowerCase + Set.
- * Why deduplicate here? Tags drive search and filtering. Duplicate tags waste
- * index space and can skew tag-count facets in search.
- *
- * vendorId is NOT in this schema — it's set by the system from req.user,
- * never from user input. A malicious payload with vendorId: "some-other-vendor"
- * gets stripped silently by Zod (unknown keys are stripped by default).
- */
 export const createProductSchema = z.object({
   body: z.object({
     name: z
