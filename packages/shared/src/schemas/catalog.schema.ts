@@ -53,7 +53,6 @@ const imageUrlAtom = z
   .max(500, "Image URL is too long")
   .regex(IMAGE_URL_REGEX, "Image URL must use HTTPS");
 
-
 const imagesAtom = (maxImages: number) =>
   z
     .array(imageUrlAtom)
@@ -95,8 +94,7 @@ const attributeAtom = z.object({
     .optional(),
 });
 
-
-// REAL SCHEMAS START FROM HERE 
+// REAL SCHEMAS START FROM HERE
 
 // =============================================================================
 // BRAND SCHEMAS
@@ -112,8 +110,7 @@ export const createBrandSchema = z.object({
         `Brand name cannot exceed ${MAX_NAME_LENGTH} characters`,
       ),
 
-    slug: slugAtom.optional(),
-
+    slug: slugAtom,
     description: z
       .string({ error: "Brand description is required" })
       .trim()
@@ -127,17 +124,6 @@ export const createBrandSchema = z.object({
   }),
 });
 
-/**
- * Schema for PUT /api/catalog/brands/:id
- *
- * Differences from createBrandSchema:
- *  - All body fields are optional (it's a partial update)
- *  - logo is nullable (passing null explicitly removes the logo)
- *  - isActive is present (you can only toggle active status via update)
- *  - slug is ABSENT (immutable — changing it breaks URLs and SEO)
- *  - params.id validates the URL param as a real ObjectId
- *  - .refine() ensures at least one field was actually sent
- */
 export const updateBrandSchema = z.object({
   body: z
     .object({
@@ -158,8 +144,6 @@ export const updateBrandSchema = z.object({
         .max(MAX_DESCRIPTION_LENGTH)
         .optional(),
 
-      // nullable on update: logo: null → "remove the logo"
-      // This asymmetry vs create is intentional.
       logo: imageUrlAtom.nullable().optional(),
 
       // isActive lives ONLY in update schemas.
@@ -177,26 +161,13 @@ export const updateBrandSchema = z.object({
   }),
 });
 
-// Inferred TypeScript types — zero hand-written interfaces needed.
+// Inferred TypeScript types for Brands.
 export type CreateBrandInput = z.infer<typeof createBrandSchema>["body"];
 export type UpdateBrandInput = z.infer<typeof updateBrandSchema>["body"];
 
 // =============================================================================
 // CATEGORY SCHEMAS
 // =============================================================================
-
-/**
- * Schema for POST /api/catalog/categories
- *
- * parent: ObjectId of a parent category, or null for root categories.
- *   null  → root level (Men, Women, Kids)
- *   ObjectId → subcategory (Men > Topwear > T-Shirts)
- *
- * IMPORTANT NOTE: Zod validates that parent is a *structurally valid* ObjectId.
- * It does NOT validate that this ObjectId actually exists in the DB.
- * That semantic check belongs in the service layer — Zod only knows shapes,
- * not database state.
- */
 export const createCategorySchema = z.object({
   body: z.object({
     name: z
@@ -208,7 +179,7 @@ export const createCategorySchema = z.object({
         `Category name cannot exceed ${MAX_NAME_LENGTH} characters`,
       ),
 
-    slug: slugAtom.optional(),
+    slug: slugAtom,
 
     description: z
       .string({ error: "Category description is required" })
@@ -225,8 +196,7 @@ export const createCategorySchema = z.object({
 });
 
 /**
- * Schema for PUT /api/catalog/categories/:id
- */
+ * Schema for PUT  */
 export const updateCategorySchema = z.object({
   body: z
     .object({
@@ -238,10 +208,6 @@ export const updateCategorySchema = z.object({
         .max(MAX_DESCRIPTION_LENGTH)
         .optional(),
       isActive: z.boolean().optional(),
-      // parent is NOT here — reparenting a category is a destructive tree operation
-      // that needs its own dedicated endpoint with cycle-detection logic.
-      // Allowing parent changes via a generic update endpoint is asking for trouble:
-      // a category could accidentally become its own ancestor.
     })
     .refine((data) => Object.keys(data).length > 0, {
       message: "At least one field must be provided to update",
@@ -290,10 +256,8 @@ export const createProductSchema = z.object({
         `Product name cannot exceed ${MAX_NAME_LENGTH} characters`,
       ),
 
-    slug: slugAtom.optional(),
+    slug: slugAtom,
 
-    // min(20) is intentional — "Nice shirt." is not a product description.
-    // Short descriptions hurt SEO (Google penalises thin content) and UX.
     description: z
       .string({ error: "Product description is required" })
       .trim()
@@ -303,11 +267,7 @@ export const createProductSchema = z.object({
         `Description cannot exceed ${MAX_DESCRIPTION_LENGTH} characters`,
       ),
 
-    // ObjectIds from the admin's category/brand dropdowns.
-    // Zod validates: "is this string a valid ObjectId format?"
-    // Service validates: "does a document with this _id actually exist?"
-    // Two different questions, two different layers.
-    category: objectIdAtom,
+   category: objectIdAtom,
     brand: objectIdAtom,
 
     // Indian regulatory requirement for GST invoicing.
@@ -319,7 +279,6 @@ export const createProductSchema = z.object({
         "Invalid HSN code — must be Chapter 61, 62, or 63 (e.g. 6109, 620342)",
       ),
 
-    // Numeric literal union — see note above about z.enum vs z.union for numbers.
     gstRate: z
       .union([z.literal(5), z.literal(12)], {
         error: "GST rate must be 5 or 12",
@@ -345,19 +304,11 @@ export const createProductSchema = z.object({
         `Cannot have more than ${MAX_TAGS_PER_PRODUCT} tags`,
       )
       .default([])
-      // Deduplicate AFTER lowercasing: ["Cotton","cotton"] → Set → ["cotton"]
-      // A Set on strings is fine here — we're working with simple primitive values.
       .transform((tags) => [...new Set(tags)]),
   }),
 });
 
-/**
- * Schema for PUT /api/catalog/products/:id
- *
- * Deliberately absent fields and why:
- *   slug      — immutable (SEO, backlinks)
- *   vendorId  — system-set, never user-set
- */
+
 export const updateProductSchema = z.object({
   body: z
     .object({
@@ -395,23 +346,7 @@ export type UpdateProductInput = z.infer<typeof updateProductSchema>["body"];
 // =============================================================================
 
 /**
- * Schema for POST /api/catalog/products/:productId/variants
- *
- * productId comes from the route PARAMS, not the body.
- * The route is /products/:productId/variants — RESTful nesting.
- * The controller reads req.params.productId and passes it to the service.
- * It never needs to be in the body.
- *
- * stockQuantity IS present on create — when a new variant is first added,
- * you typically know the opening stock (e.g. 50 units just arrived).
- * stockQuantity is ABSENT from the update schema because stock mutations
- * must go through InventoryService exclusively (atomic operations, reservations).
- *
- * sku is normalised to uppercase via .toUpperCase() transform before the regex.
- * This prevents "LS-RED-XL" and "ls-red-xl" from being treated as different SKUs.
- * The DB has a unique index on sku — without normalisation, you can have
- * "duplicate" SKUs that differ only in case, which is a warehouse nightmare.
- *
+ * Schema for POST  *
  * SECURITY BOUNDARY clearly documented here:
  * Fields absent from updateVariantSchema:
  *   sku              — immutable (every order, invoice, warehouse system references it)
@@ -436,7 +371,7 @@ export const createProductVariantSchema = z.object({
         .min(3, "Variant name must be at least 3 characters")
         .max(100, "Variant name cannot exceed 100 characters"),
 
-      slug: slugAtom.optional(),
+      slug: slugAtom,
 
       description: z
         .string()
