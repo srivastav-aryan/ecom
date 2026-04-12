@@ -1,6 +1,6 @@
 import { Types } from "mongoose";
 import type pino from "pino";
-import { UserRole } from "@e-com/shared/types";
+import { UserRole } from "@e-com/shared/authorization";
 
 declare global {
   namespace Express {

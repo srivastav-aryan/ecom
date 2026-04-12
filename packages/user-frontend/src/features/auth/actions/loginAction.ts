@@ -1,9 +1,9 @@
 import { fetchClient, setAccessToken } from "@/http/fetchClient";
-import { 
+import {
   userLoginSchema, 
-  type userLoginInput,
-  type ActionResponse 
+  type userLoginInput
 } from "@e-com/shared/schemas";
+import type { ActionResponse } from "@e-com/shared/types";
 import { redirect, type ActionFunctionArgs, type ActionFunction } from "react-router-dom";
 
 export default async function loginAction({

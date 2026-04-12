@@ -4,7 +4,7 @@ import {
   Permission,
   USER_ROLES,
   UserRole,
-} from "@e-com/shared/types";
+} from "@e-com/shared/authorization";
 import { UserAddress } from "@e-com/shared/schemas";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";

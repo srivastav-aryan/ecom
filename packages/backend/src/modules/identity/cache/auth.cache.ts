@@ -1,4 +1,4 @@
-import { Permission, UserRole } from "@e-com/shared/types";
+import { Permission, UserRole } from "@e-com/shared/authorization";
 
 export interface AuthCacheEntry{
   role: UserRole,

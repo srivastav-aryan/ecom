@@ -1,4 +1,4 @@
-import { UserRole } from "@e-com/shared/types";
+import { UserRole } from "@e-com/shared/authorization";
 import { JwtPayload } from "jsonwebtoken";
 import { RequestContext } from "../../../shared/types/request-context.js";
 

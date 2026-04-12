@@ -3,7 +3,7 @@ import { Field, FieldLabel, FieldError, FieldGroup } from "@/components/ui/field
 import { Button } from "@/components/ui/button";
 import { PasswordInput } from "@/features/auth/components/PasswordInput";
 import { Input } from "@/components/ui/input";
-import type { ActionResponse } from "@e-com/shared/schemas";
+import type { ActionResponse } from "@e-com/shared/types";
 
 export default function LoginPage() {
   const actionData = useActionData() as ActionResponse | undefined;

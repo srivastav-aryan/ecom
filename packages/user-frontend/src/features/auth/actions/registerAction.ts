@@ -1,10 +1,9 @@
 import { fetchClient } from "@/http/fetchClient";
-import { 
+import {
   userRegistrationSchema, 
   type userRegistrationInput,
-  type FieldErrors,
-  type ActionResponse 
 } from "@e-com/shared/schemas";
+import type { FieldErrors, ActionResponse } from "@e-com/shared/types";
 import { redirect, type ActionFunctionArgs, type ActionFunction } from "react-router-dom";
 
 export default async function registerAction({

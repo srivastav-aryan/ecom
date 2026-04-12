@@ -3,7 +3,7 @@ import { Field, FieldLabel, FieldDescription, FieldError, FieldGroup } from "@/c
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { PasswordInput } from "@/features/auth/components/PasswordInput";
-import type { ActionResponse } from "@e-com/shared/schemas";
+import type { ActionResponse } from "@e-com/shared/types";
 
 export default function RegisterPage() {
   const actionData = useActionData() as ActionResponse | undefined;
