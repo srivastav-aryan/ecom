@@ -321,24 +321,6 @@ export type UpdateProductInput = z.infer<typeof updateProductSchema>["body"];
 // =============================================================================
 // PRODUCT VARIANT SCHEMAS
 // =============================================================================
-
-/**
- * Schema for POST  *
- * SECURITY BOUNDARY clearly documented here:
- * Fields absent from updateVariantSchema:
- *   sku              — immutable (every order, invoice, warehouse system references it)
- *   productId        — immutable (a variant's parent product never changes)
- *   stockQuantity    — InventoryService only (atomic stock ops, prevents race conditions)
- *   reservedQuantity — internal inventory state machine, never user-facing
- *
- * CROSS-FIELD RULES via .superRefine() (not .refine()):
- *   - sellingPrice MUST be <= mrp (can't sell above listed price)
- *   - costPrice (if provided) SHOULD be <= sellingPrice (negative margin guard)
- *
- * .superRefine() over .refine() because it lets us call ctx.addIssue() multiple
- * times with specific field PATHS. The frontend gets an error pinned to the
- * exact input field ("sellingPrice"), not just a generic form-level message.
- */
 export const createProductVariantSchema = z.object({
   body: z
     .object({
@@ -371,9 +353,6 @@ export const createProductVariantSchema = z.object({
       sellingPrice: priceAtom,
       mrp: priceAtom,
 
-      // Optional — not all catalog managers track cost price.
-      // If provided: validated with the same price rules.
-      // NEVER returned in public-facing API responses (service layer projection).
       costPrice: priceAtom.optional(),
 
       // Opening stock on variant creation. Subsequent mutations → InventoryService.
@@ -399,8 +378,7 @@ export const createProductVariantSchema = z.object({
         .refine(
           (attrs) => {
             // A single variant cannot have two attributes with the same name.
-            // [{ name: "Color", value: "Red" }, { name: "Color", value: "Blue" }] is nonsensical —
-            // a variant is one specific thing. It can't simultaneously be Red AND Blue.
+            // [{ name: "Color", value: "Red" }, { name: "Color", value: "Blue" }] is 
             const names = attrs.map((a) => a.name.toLowerCase());
             return new Set(names).size === names.length;
           },
@@ -414,7 +392,6 @@ export const createProductVariantSchema = z.object({
     })
     .superRefine((data, ctx) => {
       // RULE 1: Can't sell above MRP. This is a consumer protection principle —
-      // selling above MRP is illegal under Indian consumer law (Legal Metrology Act).
       if (data.sellingPrice > data.mrp) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
@@ -435,23 +412,12 @@ export const createProductVariantSchema = z.object({
       }
     }),
 
-  // productId comes from the :productId route param (not the body).
   params: z.object({
     productId: objectIdAtom,
   }),
 });
 
 /**
- * Schema for PUT /api/catalog/variants/:id
- *
- * DELIBERATELY ABSENT — these are security boundaries, not oversights:
- *
- *   sku              Immutable. Referenced by every order, invoice, and warehouse
- *                    record ever created. Changing it breaks history.
- *
- *   productId        Immutable. A variant's parent cannot be reassigned.
- *                    If you need this variant under a different product, create
- *                    a new variant and soft-delete this one.
  *
  *   stockQuantity    ONLY mutated via InventoryService with atomic DB ops
  *                    ($inc with optimistic locking). Allowing free stockQuantity
@@ -518,32 +484,6 @@ export type UpdateProductVariantInput = z.infer<
 // =============================================================================
 // QUERY / FILTER SCHEMAS
 // =============================================================================
-
-/**
- * Schema for GET /api/catalog/products?page=1&limit=20&categoryId=...
- *
- * ALL query params arrive as STRINGS from Express (req.query).
- * ?page=1 → req.query.page = "1" (the string "1", not the number 1).
- *
- * .transform(Number) converts "1" → 1.
- * .pipe() then validates the converted number.
- *
- * Without this dance:
- *   ?page=abc → "abc" * 20 = NaN → skip = NaN → Mongoose does undefined behaviour.
- * With this:
- *   ?page=abc → transform("abc") = NaN → z.number() fails → clean 400 response.
- *
- * limit is capped at MAX_PAGE_SIZE (100).
- * Without the cap: ?limit=999999 forces a full table scan and serialises
- * hundreds of thousands of documents — guaranteed OOM or timeout under load.
- *
- * tags: comma-separated string → array.
- * Standard REST convention for multi-value query params.
- * ?tags=cotton,denim → ["cotton", "denim"]
- *
- * isActive: "true"/"false" (strings) → boolean.
- * z.boolean() alone fails on query strings because "true" !== true.
- */
 export const productListQuerySchema = z.object({
   query: z.object({
     page: z
@@ -609,7 +549,7 @@ export const productListQuerySchema = z.object({
   }),
 });
 
-// Brand / Category list queries — simpler, no price filtering
+
 export const brandListQuerySchema = z.object({
   query: z.object({
     page: z
@@ -658,11 +598,11 @@ export const categoryListQuerySchema = z.object({
       .default("true")
       .transform((val) => val === "true"),
 
-    parent: objectIdAtom.optional(), // filter by parent category
+    parent: objectIdAtom.optional(), 
   }),
 });
 
-// Inferred types for query schemas — used in service method signatures
+
 export type ProductListQuery = z.infer<typeof productListQuerySchema>["query"];
 export type BrandListQuery = z.infer<typeof brandListQuerySchema>["query"];
 export type CategoryListQuery = z.infer<

@@ -19,7 +19,7 @@ const productSchema = new mongoose.Schema<IProduct>(
     vendorId: {
       type: String,
       required: true,
-      default: "Default Vendor",
+      default: "Default Vendor",// Till the time of multi-vendor, this is the default single vendor
     },
     name: {
       type: String,
