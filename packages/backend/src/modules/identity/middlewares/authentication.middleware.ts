@@ -36,6 +36,7 @@ export const createAuthMiddleware = (
 
       let cachedUser = authCache.get(userId);
 
+      // Cache Miss: Fetch from DB and populate cache
       if (!cachedUser) {
         const user = await userService.findUserByIdForAuth(userId, ctx);
 
@@ -43,23 +44,28 @@ export const createAuthMiddleware = (
           throw new JWTError("User inactive", JWT_ERROR_CODES.INVALID);
         }
 
-        authCache.set(userId, {
+        cachedUser = {
           role: user.role,
           isActive: user.isActive,
           permissions: user.permissions,
           expiresAt: Date.now() + auth_cache_TTL,
-        });
-
-        req.user = {
-          _id: new Types.ObjectId(decoded._id),
-          role: decoded.role,
-          email: decoded.email,
         };
+        
+        authCache.set(userId, cachedUser);
       }
 
-      if (!cachedUser?.isActive) {
+      // Check if user is active based on cached or freshly fetched data
+      if (!cachedUser.isActive) {
         throw new JWTError("User inactive", JWT_ERROR_CODES.INVALID);
       }
+
+      // Unconditionally attach the user object to the request for downstream middlewares
+      req.user = {
+        _id: new Types.ObjectId(decoded._id),
+        role: cachedUser.role,
+        email: decoded.email, // email comes from JWT, not cache
+        permissions: cachedUser.permissions,
+      };
 
       next();
     } catch (error) {

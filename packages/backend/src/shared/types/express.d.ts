@@ -1,6 +1,6 @@
 import { Types } from "mongoose";
 import type pino from "pino";
-import { UserRole } from "@e-com/shared/authorization";
+import { UserRole, Permission } from "@e-com/shared/authorization";
 
 declare global {
   namespace Express {
@@ -10,7 +10,8 @@ declare global {
       user?: {
         _id: Types.ObjectId,
         email: string,
-        role: UserRole
+        role: UserRole,
+        permissions: Permission[],
       };
     }
   }
