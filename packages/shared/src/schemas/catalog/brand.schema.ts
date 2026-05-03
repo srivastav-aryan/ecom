@@ -8,7 +8,7 @@
  *
  * Covers:
  *   POST /api/catalog/brands           → createBrandSchema
- *   PUT  /api/catalog/brands/:id       → updateBrandSchema
+ *   PATCH  /api/catalog/brands/:id       → updateBrandSchema
  *   GET  /api/catalog/brands           → brandListQuerySchema
  */
 import { z } from "zod";
