@@ -33,5 +33,4 @@ packages/*/dist/
 *.sw?
 
 # personal
-scope_plan.md
-
+catalog_implementation.md
