@@ -6,6 +6,7 @@ import morgan from "morgan";
 import { logger } from "./shared/utils/logging.utils.js";
 import { randomUUID } from "node:crypto";
 import { authRouter } from "./modules/identity/routes/auth.routes.js";
+import { brandRouter } from "./modules/catalog/routes/brand.routes.js";
 import { globalErrorHandler } from "./shared/middlewares/globalErrorHandler.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
@@ -107,6 +108,9 @@ export const createApp = (): express.Application => {
 
   // Auth endpoint for REST API
   app.use("/api/auth", authRouter);
+
+  // Catalog endpoints
+  app.use("/api/catalog/brands", brandRouter);
 
   //global error handler
   app.use(globalErrorHandler);
