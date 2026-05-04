@@ -9,5 +9,6 @@ export interface IBrandService {
   getBrandBySlug(slug: string, ctx?: RequestContext): Promise<IBrand>;
   listBrands(query: BrandListQuery, ctx?: RequestContext): Promise<PaginatedResult<IBrand>>;
   updateBrand(id: string, input: UpdateBrandInput, ctx?: RequestContext): Promise<IBrand>;
-  deleteBrand(id: string, ctx?: RequestContext): Promise<void>;
+  softDeleteBrand(id: string, ctx?: RequestContext): Promise<void>;
+  hardDeleteBrand(id: string, ctx?: RequestContext): Promise<void>;
 }
