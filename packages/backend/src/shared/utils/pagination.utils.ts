@@ -1,11 +1,7 @@
-export interface PaginationMeta {
-  page: number;
-  limit: number;
-  totalCount: number;
-  totalPages: number;
-  hasNextPage: boolean;
-  hasPrevPage: boolean;
-}
+import { PaginationMeta, PaginatedResult } from "@e-com/shared/types";
+
+// Re-export so existing imports across the backend don't break.
+export type { PaginationMeta, PaginatedResult };
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 20;
@@ -39,9 +35,3 @@ export const buildPaginationMeta = (
     hasPrevPage: page > 1,
   };
 };
-
-
-export interface PaginatedResult<T> {
-  items: T[];
-  pagination: PaginationMeta;
-}
