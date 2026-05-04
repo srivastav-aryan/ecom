@@ -1,15 +1,16 @@
-/**
+/*
  * brand.schema.ts
  *
  * Zod validation schemas for Brand API endpoints.
  *
- * WHO OWNS THIS FILE: The marketing / brand-management team.
- * Reason to change: Brand data shape requirements change (new fields, new rules).
- *
+
  * Covers:
- *   POST /api/catalog/brands           → createBrandSchema
- *   PATCH  /api/catalog/brands/:id       → updateBrandSchema
- *   GET  /api/catalog/brands           → brandListQuerySchema
+ *   POST   /api/catalog/brands            → createBrandSchema
+ *   PATCH  /api/catalog/brands/:id        → updateBrandSchema
+ *   GET    /api/catalog/brands            → brandListQuerySchema
+ *   GET    /api/catalog/brands/:id        → brandIdParamSchema
+ *   GET    /api/catalog/brands/slug/:slug → brandSlugParamSchema
+ *   DELETE /api/catalog/brands/:id        → brandIdParamSchema
  */
 import { z } from "zod";
 import { MAX_DESCRIPTION_LENGTH, MAX_NAME_LENGTH, DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE } from "../../constants/index.js";
@@ -90,6 +91,31 @@ export const updateBrandSchema = z.object({
   // 400 here — not as a Mongoose CastError 500 inside the service.
   params: z.object({
     id: objectIdAtom,
+  }),
+});
+
+// ---------------------------------------------------------------------------
+// PARAM-ONLY SCHEMAS
+// ---------------------------------------------------------------------------
+// Routes that have NO body — the only input is the URL parameter.
+// Used by: GET /brands/:id, DELETE /brands/:id, GET /brands/slug/:slug
+//
+// Why not inline these in each route? DRY. The objectIdAtom validation is
+// identical for get-by-id and delete. Centralise it here, reuse everywhere.
+//
+// The update schema has its OWN params block (identical shape) because it
+// also carries a body. Extracting and composing would add complexity with
+// z.intersection / .merge — not worth it for one shared field.
+// ---------------------------------------------------------------------------
+export const brandIdParamSchema = z.object({
+  params: z.object({
+    id: objectIdAtom,
+  }),
+});
+
+export const brandSlugParamSchema = z.object({
+  params: z.object({
+    slug: slugAtom,
   }),
 });
 
