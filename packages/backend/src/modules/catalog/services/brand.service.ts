@@ -10,6 +10,7 @@ import {
   parsePagination,
   buildPaginationMeta,
 } from "../../../shared/utils/pagination.utils.js";
+import { Product } from "../models/product.model.js";
 
 export class BrandService implements IBrandService {
   async createBrand(
@@ -126,5 +127,47 @@ export class BrandService implements IBrandService {
       }
       throw error;
     }
+  }
+
+  async softDeleteBrand(id: string, ctx?: RequestContext): Promise<void> {
+    ctx?.logger?.info({ brandId: id }, "Soft deleting brand");
+
+    const brand = await Brand.findOneAndUpdate(
+      { _id: id, isActive: true },
+      { $set: { isActive: false } },
+      { new: true },
+    );
+
+    if (!brand) {
+      ctx?.logger?.info({ brandId: id }, "Brand already deleted or not found");
+      return; // idempotent success
+    }
+
+    ctx?.logger?.info({ brandId: id }, "Brand soft deleted");
+    return;
+  }
+
+  async hardDeleteBrand(id: string, ctx?: RequestContext): Promise<void> {
+    ctx?.logger?.info({ brandId: id }, "Hard deleting brand");
+
+    // indexed so search will be efficient
+    const linkedProduct = await Product.exists({
+      brand: id,
+    });
+    if (linkedProduct) {
+      ctx?.logger?.warn({ brandId: id }, "Brand is linked to products");
+      throw new ApiError(
+        409,
+        "Brand is linked to products and cannot be hard deleted",
+      );
+    }
+    const brand = await Brand.findByIdAndDelete(id);
+    if (!brand) {
+      ctx?.logger?.info({ brandId: id }, "Brand already deleted or not found");
+      return; // idempotent success
+    }
+    // ********************Tiny Rac condition window here since 2 db calls in  different collections but is ok if there is no concurrent catalogue operations**********
+    ctx?.logger?.info({ brandId: id }, "Brand hard deleted");
+    return;
   }
 }
