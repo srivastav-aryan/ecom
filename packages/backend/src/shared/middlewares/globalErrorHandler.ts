@@ -2,8 +2,9 @@ import { NextFunction, Request, Response } from "express";
 import { ZodError } from "zod";
 import { ApiError } from "../utils/applevel.utils.js";
 import { env } from "../config/env.js";
-import { JWTError } from "../../modules/identity/interfaces/token.service.interface.js";
+import { JWTError } from "../../modules/identity/index.js";
 import { ErrorResponse } from "@e-com/shared/types";
+import { CatalogError } from "../../modules/catalog/index.js";
 
 // globall error handler
 export const globalErrorHandler = (
@@ -35,6 +36,11 @@ export const globalErrorHandler = (
     statusCode = err.statusCode
     message = err.message
     code = err.code
+  }
+  else if (err instanceof CatalogError) {
+    statusCode = err.statusCode;
+    message = err.message;
+    code = err.code;
   }
 
   // log for debuging

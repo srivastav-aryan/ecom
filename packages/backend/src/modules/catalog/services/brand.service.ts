@@ -3,7 +3,7 @@ import { IBrandService } from "../interfaces/brand.service.interface.js";
 import { RequestContext } from "../../../shared/types/request-context.js";
 import { IBrand, Brand } from "../models/brand.model.js";
 import { generateSlug } from "../../../shared/utils/slug.utils.js";
-import { ApiError } from "../../../shared/utils/applevel.utils.js";
+import { CatalogError } from "../errors/catalog.errors.js";
 import { BrandListQuery } from "@e-com/shared/schemas";
 import {
   PaginatedResult,
@@ -38,9 +38,10 @@ export class BrandService implements IBrandService {
           { slug: input.slug },
           "Attempt to create a brand with an already registered slug or name",
         );
-        throw new ApiError(
-          409,
+        throw new CatalogError(
+          "BRAND_ALREADY_EXISTS",
           "The slug or name is already registered. Please use a different one",
+          409,
         );
       }
       throw error;
@@ -51,7 +52,7 @@ export class BrandService implements IBrandService {
     const brand = await Brand.findById(id).lean();
     if (!brand) {
       ctx?.logger?.warn({ brandId: id }, "Brand not found");
-      throw new ApiError(404, "Brand not found");
+      throw new CatalogError("BRAND_NOT_FOUND", "Brand not found", 404);
     }
     return brand as IBrand;
   }
@@ -60,7 +61,7 @@ export class BrandService implements IBrandService {
     const brand = await Brand.findOne({ slug }).lean();
     if (!brand) {
       ctx?.logger?.warn({ slug }, "Brand not found");
-      throw new ApiError(404, "Brand not found");
+      throw new CatalogError("BRAND_NOT_FOUND", "Brand not found", 404);
     }
     return brand as IBrand;
   }
@@ -109,7 +110,7 @@ export class BrandService implements IBrandService {
       ).lean();
 
       if (!brand) {
-        throw new ApiError(404, "Brand not found");
+        throw new CatalogError("BRAND_NOT_FOUND", "Brand not found", 404);
       }
 
       ctx?.logger?.info({ brandId: id }, "Brand updated");
@@ -120,9 +121,10 @@ export class BrandService implements IBrandService {
           { brandId: id },
           "Attempt to update a brand with an already registered name",
         );
-        throw new ApiError(
-          409,
+        throw new CatalogError(
+          "BRAND_ALREADY_EXISTS",
           "The name is already registered. Please use a different one",
+          409,
         );
       }
       throw error;
@@ -156,9 +158,10 @@ export class BrandService implements IBrandService {
     });
     if (linkedProduct) {
       ctx?.logger?.warn({ brandId: id }, "Brand is linked to products");
-      throw new ApiError(
-        409,
+      throw new CatalogError(
+        "BRAND_HAS_PRODUCTS",
         "Brand is linked to products and cannot be hard deleted",
+        409,
       );
     }
     const brand = await Brand.findByIdAndDelete(id);
@@ -166,7 +169,7 @@ export class BrandService implements IBrandService {
       ctx?.logger?.info({ brandId: id }, "Brand already deleted or not found");
       return; // idempotent success
     }
-    // ********************Tiny Rac condition window here since 2 db calls in  different collections but is ok if there is no concurrent catalogue operations**********
+    // ********************Tiny Race condition window here since 2 db calls in  different collections but is ok if there is no concurrent catalogue operations**********
     ctx?.logger?.info({ brandId: id }, "Brand hard deleted");
     return;
   }

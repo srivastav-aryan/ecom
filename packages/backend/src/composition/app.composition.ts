@@ -1,13 +1,14 @@
 import { env } from "../shared/config/env.js";
-import { authControllerCreator } from "../modules/identity/controllers/auth.controller.js";
-import AuthServices from "../modules/identity/services/auth.service.js";
-import RateLimiterService from "../modules/identity/services/ratelimiter.service.js";
-import UserServices from "../modules/identity/services/user.service.js";
-import { SessionService } from "../modules/identity/services/session.service.js";
-import { TokenService } from "../modules/identity/services/token.service.js";
-import { createAuthMiddleware } from "../modules/identity/middlewares/authentication.middleware.js";
-import { BrandService } from "../modules/catalog/services/brand.service.js";
-import { brandControllerCreator } from "../modules/catalog/controllers/brand.controller.js";
+import {
+  authControllerCreator,
+  AuthServices,
+  RateLimiterService,
+  UserServices,
+  SessionService,
+  TokenService,
+  createAuthMiddleware,
+} from "../modules/identity/index.js";
+import { BrandService, brandControllerCreator } from "../modules/catalog/index.js";
 
 // ******** Identity Module ********
 // --- Services ---

@@ -20,10 +20,14 @@ export {
   type TokenServiceInterface,
   type AccessTokenPayload,
   type RefreshTokenPayload,
+} from "./interfaces/token.service.interface.js";
+
+// Errors
+export {
+  JWTError,
   type JWTErrorCode,
   JWT_ERROR_CODES,
-  JWTError,
-} from "./interfaces/token.service.interface.js";
+} from "./errors/identity.errors.js";
 
 // Cache
 export { authCache, type AuthCacheEntry } from "./cache/auth.cache.js";
