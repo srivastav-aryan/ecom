@@ -49,6 +49,7 @@ function MobileNav({ navItems }: NavProps) {
           className="w-[90%] mx-auto border-b border-gray-600"
         >
           {navItems.map((topItem) => {
+
             if (topItem.hasMenu) {
               return (
                 <div
