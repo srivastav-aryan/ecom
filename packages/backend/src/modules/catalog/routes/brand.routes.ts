@@ -1,4 +1,4 @@
-import express from "express";
+import express, { RequestHandler } from "express";
 import { validateReq } from "../../../shared/middlewares/validation.middleware.js";
 import { authorize } from "../../../shared/middlewares/authorization.middleware.js";
 import { PERMISSIONS } from "@e-com/shared/authorization";
@@ -9,67 +9,74 @@ import {
   brandIdParamSchema,
   brandSlugParamSchema,
 } from "@e-com/shared/schemas";
-import { brandController, authenticate } from "../../../composition/app.composition.js";
+import { BrandControllerInterface } from "../interfaces/brand.controller.interface.js";
 
-export const brandRouter = express.Router();
+export const createBrandRouter = (
+  brandController: BrandControllerInterface,
+  authenticate: RequestHandler
+) => {
+  const brandRouter = express.Router();
 
-// ---- Public routes (no auth required) ----
+  // ---- Public routes (no auth required) ----
 
-// GET /api/catalog/brands — List brands (paginated, filterable)
-brandRouter.get(
-  "/",
-  validateReq(brandListQuerySchema),
-  brandController.listBrands,
-);
+  // GET /api/catalog/brands — List brands (paginated, filterable)
+  brandRouter.get(
+    "/",
+    validateReq(brandListQuerySchema),
+    brandController.listBrands,
+  );
 
-// GET /api/catalog/brands/slug/:slug — Get brand by slug (public storefront)
-brandRouter.get(
-  "/slug/:slug",
-  validateReq(brandSlugParamSchema),
-  brandController.getBrandBySlug,
-);
+  // GET /api/catalog/brands/slug/:slug — Get brand by slug (public storefront)
+  brandRouter.get(
+    "/slug/:slug",
+    validateReq(brandSlugParamSchema),
+    brandController.getBrandBySlug,
+  );
 
-// GET /api/catalog/brands/:id — Get brand by ID (public)
-brandRouter.get(
-  "/:id",
-  validateReq(brandIdParamSchema),
-  brandController.getBrandById,
-);
+  // GET /api/catalog/brands/:id — Get brand by ID (public)
+  brandRouter.get(
+    "/:id",
+    validateReq(brandIdParamSchema),
+    brandController.getBrandById,
+  );
 
-// ---- Protected routes (auth + permission required) ----
+  // ---- Protected routes (auth + permission required) ----
 
-// POST /api/catalog/brands — Create a new brand
-brandRouter.post(
-  "/",
-  authenticate,
-  authorize(PERMISSIONS.BRANDS_CREATE),
-  validateReq(createBrandSchema),
-  brandController.createBrand,
-);
+  // POST /api/catalog/brands — Create a new brand
+  brandRouter.post(
+    "/",
+    authenticate,
+    authorize(PERMISSIONS.BRANDS_CREATE),
+    validateReq(createBrandSchema),
+    brandController.createBrand,
+  );
 
-// PATCH /api/catalog/brands/:id — Partial update
-brandRouter.patch(
-  "/:id",
-  authenticate,
-  authorize(PERMISSIONS.BRANDS_UPDATE),
-  validateReq(updateBrandSchema),
-  brandController.updateBrand,
-);
+  // PATCH /api/catalog/brands/:id — Partial update
+  brandRouter.patch(
+    "/:id",
+    authenticate,
+    authorize(PERMISSIONS.BRANDS_UPDATE),
+    validateReq(updateBrandSchema),
+    brandController.updateBrand,
+  );
 
-// PATCH /api/catalog/brands/:id/deactivate — Soft delete (set isActive: false)
-brandRouter.patch(
-  "/:id/deactivate",
-  authenticate,
-  authorize(PERMISSIONS.BRANDS_DELETE),
-  validateReq(brandIdParamSchema),
-  brandController.softDeleteBrand,
-);
+  // PATCH /api/catalog/brands/:id/deactivate — Soft delete (set isActive: false)
+  brandRouter.patch(
+    "/:id/deactivate",
+    authenticate,
+    authorize(PERMISSIONS.BRANDS_DELETE),
+    validateReq(brandIdParamSchema),
+    brandController.softDeleteBrand,
+  );
 
-// DELETE /api/catalog/brands/:id — Hard delete (only if no products reference it)
-brandRouter.delete(
-  "/:id",
-  authenticate,
-  authorize(PERMISSIONS.BRANDS_DELETE),
-  validateReq(brandIdParamSchema),
-  brandController.hardDeleteBrand,
-);
+  // DELETE /api/catalog/brands/:id — Hard delete (only if no products reference it)
+  brandRouter.delete(
+    "/:id",
+    authenticate,
+    authorize(PERMISSIONS.BRANDS_DELETE),
+    validateReq(brandIdParamSchema),
+    brandController.hardDeleteBrand,
+  );
+
+  return brandRouter;
+};

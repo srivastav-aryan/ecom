@@ -1,6 +1,3 @@
-// === Identity Module Public API ===
-// Other modules should ONLY import from this file, never reach into internals.
-
 // Models
 export { User, type IUser } from "./models/user.model.js";
 export { userSession, type IUserSession } from "./models/userSession.model.js";
@@ -22,6 +19,8 @@ export {
   type RefreshTokenPayload,
 } from "./interfaces/token.service.interface.js";
 
+export type { AuthControllerInterface } from "./interfaces/auth.controller.interface.js";
+
 // Errors
 export {
   JWTError,
@@ -36,8 +35,9 @@ export { authCache, type AuthCacheEntry } from "./cache/auth.cache.js";
 export { authControllerCreator } from "./controllers/auth.controller.js";
 export type { RateLimiter } from "./controllers/auth.controller.js";
 
-// Routes
-export { authRouter } from "./routes/auth.routes.js";
 
 // Middlewares
 export { createAuthMiddleware } from "./middlewares/authentication.middleware.js";
+
+// Routes
+export { createAuthRouter } from "./routes/auth.routes.js";

@@ -1,18 +1,24 @@
 import express from "express";
 import { validateReq } from "../../../shared/middlewares/validation.middleware.js";
 import { userLoginSchema, userRegistrationSchema } from "@e-com/shared/schemas";
-import { authController } from "../../../composition/app.composition.js";
+import { AuthControllerInterface } from "../interfaces/auth.controller.interface.js";
 
 export const authRouter = express.Router();
 
-authRouter.post(
-  "/register",
-  validateReq(userRegistrationSchema),
-  authController.registerController
-);
+export const createAuthRouter = (authController: AuthControllerInterface) => {
+  const authRouter = express.Router()
 
-authRouter.post("/login", validateReq(userLoginSchema), authController.loginController);
+  authRouter.post(
+    "/register",
+    validateReq(userRegistrationSchema),
+    authController.registerController
+  );
 
-authRouter.post("/refresh", authController.refreshController)
+  authRouter.post("/login", validateReq(userLoginSchema), authController.loginController);
 
-authRouter.post("/logout", authController.logOut)
+  authRouter.post("/refresh", authController.refreshController)
+
+  authRouter.post("/logout", authController.logOut)
+
+  return authRouter
+}

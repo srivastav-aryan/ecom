@@ -9,12 +9,15 @@ export { BrandService } from "./services/brand.service.js";
 
 // Interfaces
 export type { IBrandService } from "./interfaces/brand.service.interface.js";
+export type { BrandControllerInterface } from "./interfaces/brand.controller.interface.js";
 
 // Controllers
 export { brandControllerCreator } from "./controllers/brand.controller.js";
 
 // Routes
-export { brandRouter } from "./routes/brand.routes.js";
+export { createBrandRouter } from "./routes/brand.routes.js";
+
+
 
 // Errors
 export { CatalogError, type CatalogErrorCode, CATALOG_ERROR_CODES } from "./errors/catalog.errors.js";

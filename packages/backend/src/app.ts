@@ -5,11 +5,10 @@ import compression from "compression";
 import morgan from "morgan";
 import { logger } from "./shared/utils/logging.utils.js";
 import { randomUUID } from "node:crypto";
-import { authRouter } from "./modules/identity/index.js";
-import { brandRouter } from "./modules/catalog/index.js";
 import { globalErrorHandler } from "./shared/middlewares/globalErrorHandler.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
+import { authRouter, brandRouter } from "./composition/app.composition.js";
 
 const setupMiddleWares = (app: express.Application): void => {
   app.use(

@@ -6,16 +6,27 @@ import {
   UserServices,
   SessionService,
   TokenService,
+  AuthControllerInterface,
   createAuthMiddleware,
+  UserServiceInterface,
+  SessionServiceInterface,
+  TokenServiceInterface,
+  IAuthService,
+  createAuthRouter,
 } from "../modules/identity/index.js";
-import { BrandService, brandControllerCreator } from "../modules/catalog/index.js";
+import {
+  BrandService,
+  brandControllerCreator,
+  BrandControllerInterface,
+  createBrandRouter,
+} from "../modules/catalog/index.js";
 
 // ******** Identity Module ********
 // --- Services ---
-const userServices = new UserServices();  
-const sessionService = new SessionService();
-const tokenService = new TokenService();
-const authServices = new AuthServices(
+const userServices: UserServiceInterface= new UserServices();
+const sessionService: SessionServiceInterface = new SessionService();
+const tokenService: TokenServiceInterface = new TokenService();
+const authServices: IAuthService = new AuthServices(
   userServices,
   sessionService,
   tokenService,
@@ -26,14 +37,17 @@ const loginLimiter = new RateLimiterService(
   Number(env.LOGIN_MAX_ATTEMPTS),
 );
 // --- Controllers ---
-export const authController = authControllerCreator(authServices, loginLimiter, tokenService);
+export const authController: AuthControllerInterface = authControllerCreator(authServices, loginLimiter, tokenService);
 // --- Middleware ---
-export const authenticate = createAuthMiddleware(tokenService, userServices);
-
+export const authenticateMiddlware = createAuthMiddleware(tokenService, userServices);
+ // -- Router ---
+ export const authRouter = createAuthRouter(authController) 
 
 
 // *********** Catalog Module**********
 // --- Services----
 const brandService = new BrandService();
 // --- Controllers ---
-export const brandController = brandControllerCreator(brandService);
+export const brandController: BrandControllerInterface = brandControllerCreator(brandService);
+// --- Router ---
+export const brandRouter = createBrandRouter(brandController, authenticateMiddlware);

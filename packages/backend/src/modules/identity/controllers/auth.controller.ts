@@ -8,6 +8,7 @@ import { RequestContext } from "../../../shared/types/request-context.js";
 import pino from "pino";
 import { IAuthService } from "../interfaces/auth.service.interface.js";
 import { userForAuthStatus, responseForAuth } from "@e-com/shared/types";
+import { AuthControllerInterface } from "../interfaces/auth.controller.interface.js";
 
 export interface RateLimiter {
   checkRateLimit: (
@@ -34,7 +35,7 @@ export const authControllerCreator = (
   authServices: IAuthService,
   loginLimiter: RateLimiter,
   tokenService: TokenServiceInterface,
-) => {
+): AuthControllerInterface => {
   return {
     registerController: async (
       req: Request,
