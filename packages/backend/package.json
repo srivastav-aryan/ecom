@@ -12,7 +12,7 @@
     "dev:ts": "tsc --watch",
     "clean": "rimraf dist",
     "build": "tsc",
-    "seed:admin": "npm run build && node dist/src/scripts/seed-admin.js"
+    "seed:admin": "pnpm run build && node dist/src/scripts/seed-admin.js"
   },
   "keywords": [],
   "author": "",

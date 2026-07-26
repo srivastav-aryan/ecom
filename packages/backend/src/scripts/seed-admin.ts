@@ -2,10 +2,8 @@ import mongoose from "mongoose";
 import { User } from "../modules/identity/models/user.model.js";
 import { USER_ROLES, DEFAULT_PERMISSIONS } from "@e-com/shared/authorization";
 import { connectDB } from "../shared/config/dbconfig.js";
+import {fileURLToPath} from "url";
 
-// NEVER IMPORT THIS FILE ANYWHERE IT WILL KILL THE NODE SERVER MIDWAY!!!!!!!!! AS IT CONTAINS process.exit() CALLS!!!!!!
-// ALWAYS RUN THIS SCRIPT AS CLI TOOL!!!!!!!
-// DO THIS pnpm run seed:admin
 
 async function seedAdmin() {
   try {
@@ -55,4 +53,7 @@ async function seedAdmin() {
   }
 }
 
-seedAdmin();
+if (process.argv[1] ===  fileURLToPath(import.meta.url)) {
+  seedAdmin()
+}
+
