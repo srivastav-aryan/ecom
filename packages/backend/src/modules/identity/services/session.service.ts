@@ -11,7 +11,7 @@ export class SessionService implements SessionServiceInterface {
     ctx?: RequestContext,
     options?: { session: mongoose.ClientSession },
   ) {
-    ctx?.logger?.debug({ userId }, "creating session for this user");
+    ctx?.logger.debug({ userId }, "creating session for this user");
     const hashedRefToken = crypto
       .createHash("sha256")
       .update(refreshToken)
@@ -31,7 +31,7 @@ export class SessionService implements SessionServiceInterface {
       },
     ]);
 
-    ctx?.logger?.debug({ userId }, "session created for this user");
+    ctx?.logger.debug({ userId }, "session created for this user");
   }
 
   async findSessionByToken(
@@ -42,7 +42,7 @@ export class SessionService implements SessionServiceInterface {
 
     const session = await userSession.findOne({ refreshTokenHash: hash });
     if (!session) {
-      ctx?.logger?.warn(
+      ctx?.logger.warn(
         { refreshTokenHash: hash },
         "Session not found for token",
       );
@@ -52,20 +52,20 @@ export class SessionService implements SessionServiceInterface {
   }
 
   async revokeSession(sessionId: string, ctx?: RequestContext): Promise<void> {
-    ctx?.logger?.debug({ sessionId }, "Revoking session");
+    ctx?.logger.debug({ sessionId }, "Revoking session");
     await userSession.findByIdAndDelete(sessionId);
-    ctx?.logger?.debug({ sessionId }, "Session revoked");
+    ctx?.logger.debug({ sessionId }, "Session revoked");
   }
 
   async revokeAllSessions(
     userId: string,
     ctx?: RequestContext,
   ): Promise<number> {
-    ctx?.logger?.info({ userId }, "Revoking all sessions for user");
+    ctx?.logger.info({ userId }, "Revoking all sessions for user");
 
     const result = await userSession.deleteMany({ userId });
 
-    ctx?.logger?.info(
+    ctx?.logger.info(
       { userId, deletedCount: result.deletedCount },
       "All sessions revoked for user",
     );

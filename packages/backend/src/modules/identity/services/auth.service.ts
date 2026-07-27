@@ -19,7 +19,7 @@ export default class AuthServices implements  IAuthService{
     user: IUser,
     ctx?: RequestContext,
   ) {
-    ctx?.logger?.info(
+    ctx?.logger.info(
       { userId: user.id },
       "starting the process of token generation for this user",
     );
@@ -29,12 +29,12 @@ export default class AuthServices implements  IAuthService{
       email: user.email,
       role: user.role,
     });
-    ctx?.logger?.debug({ userId: user.id }, "access token generated");
+    ctx?.logger.debug({ userId: user.id }, "access token generated");
 
     const refreshToken = this.tokenService.generateRefreshToken({
       _id: user.id,
     });
-    ctx?.logger?.debug({ userId: user.id }, "refresh token generated");
+    ctx?.logger.debug({ userId: user.id }, "refresh token generated");
 
     await this.sessionService.createSession(user.id, refreshToken, ctx);
 
@@ -42,23 +42,23 @@ export default class AuthServices implements  IAuthService{
   }
 
   async registerUser(userInput: userRegistrationInput, ctx?: RequestContext) {
-    ctx?.logger?.info({ email: userInput.email }, "Starting user registration");
+    ctx?.logger.info({ email: userInput.email }, "Starting user registration");
 
     try {
-      ctx?.logger?.debug("starting the process for creating user in database");
+      ctx?.logger.debug("starting the process for creating user in database");
      const user = await this.userServices.createUser(userInput, ctx);
 
-      ctx?.logger?.debug(
+      ctx?.logger.debug(
         { userId: user.id },
         "User created, generating tokens",
       );
       const tokens = await this._generateTokenAndAssignSession(user, ctx);
 
-      ctx?.logger?.info({ userId: user.id }, "User registration successful");
+      ctx?.logger.info({ userId: user.id }, "User registration successful");
 
       return {...tokens , user};
     } catch (error: any) {
-      ctx?.logger?.error(
+      ctx?.logger.error(
         { err: error, email: userInput.email },
         "User registration failed",
       );
@@ -68,20 +68,20 @@ export default class AuthServices implements  IAuthService{
 
   async loginUser(input: userLoginInput, ctx?: RequestContext) {
     const { email, password } = input;
-    ctx?.logger?.info({ email }, "Login attempt");
+    ctx?.logger.info({ email }, "Login attempt");
 
     const user = await this.userServices.findUserForLogin(email, ctx);
 
     const isPasswordValid = await user.isPasswordCorrect(password);
     if (!isPasswordValid) {
-      ctx?.logger?.warn(
+      ctx?.logger.warn(
         { email, userId: user.id },
         "Login failed - wrong password",
       );
       throw new ApiError(400, "Invalid credentials");
     }
 
-     ctx?.logger?.info({ userId: user.id }, "Login successful");
+     ctx?.logger.info({ userId: user.id }, "Login successful");
 
     return { ...(await this._generateTokenAndAssignSession(user, ctx)), user};
   }
@@ -97,7 +97,7 @@ export default class AuthServices implements  IAuthService{
     // REUSE DETECTION: Token is a valid JWT but session is gone
     // This means someone already used this token → compromise
     if (!session) {
-      ctx?.logger?.error(
+      ctx?.logger.error(
         { userId: decoded._id },
         "Refresh token reuse detected — revoking all sessions",
       );
@@ -107,7 +107,7 @@ export default class AuthServices implements  IAuthService{
     }
 
     if (!session.isValid || new Date() > session.expiresAt) {
-      ctx?.logger?.warn(
+      ctx?.logger.warn(
         { sessionId: session._id },
         "Refresh failed: Session expired or invalid",
       );
@@ -137,6 +137,6 @@ export default class AuthServices implements  IAuthService{
       await this.sessionService.revokeSession(session.id, ctx);
     }
 
-    ctx?.logger?.info("Session deleted, user logged out from one device");
+    ctx?.logger.info("Session deleted, user logged out from one device");
   }
 }

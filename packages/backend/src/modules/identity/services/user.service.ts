@@ -9,14 +9,14 @@ export default class UserServices implements UserServiceInterface {
     email: string,
     ctx?: RequestContext,
   ): Promise<IUser | null> {
-    ctx?.logger?.debug({ email }, "Looking up user by email");
+    ctx?.logger.debug({ email }, "Looking up user by email");
 
     const user = await User.findOne({ email: email });
 
     if (user) {
-      ctx?.logger?.debug({ userId: user.id }, "User found by email");
+      ctx?.logger.debug({ userId: user.id }, "User found by email");
     } else {
-      ctx?.logger?.debug({ email }, "No user found by email");
+      ctx?.logger.debug({ email }, "No user found by email");
     }
 
     return user;
@@ -26,17 +26,17 @@ export default class UserServices implements UserServiceInterface {
     userId: string,
     ctx?: RequestContext,
   ): Promise<IUser> {
-    ctx?.logger?.debug({ userId }, "Looking up user by ID for auth");
+    ctx?.logger.debug({ userId }, "Looking up user by ID for auth");
     const user = await User.findById(userId).select(
       "+isActive",
     );
 
     if (!user) {
-      ctx?.logger?.warn({ userId }, "User not found by ID for auth");
+      ctx?.logger.warn({ userId }, "User not found by ID for auth");
       throw new ApiError(401, "User not found");
     }
 
-    ctx?.logger?.debug({ userId: user.id }, "User found by ID for auth");
+    ctx?.logger.debug({ userId: user.id }, "User found by ID for auth");
     return user;
   }
 
@@ -44,15 +44,15 @@ export default class UserServices implements UserServiceInterface {
     email: string,
     ctx?: RequestContext,
   ): Promise<IUser> {
-    ctx?.logger?.debug({ email }, "Looking up user by email for LOGIN");
+    ctx?.logger.debug({ email }, "Looking up user by email for LOGIN");
     const user = await User.findOne({ email: email }).select("+password");
 
     if (!user) {
-      ctx?.logger?.warn({ email }, "Login failed - user not found");
+      ctx?.logger.warn({ email }, "Login failed - user not found");
       throw new ApiError(400, "Invalid credentials");
     }
 
-    ctx?.logger?.debug({ userId: user.id }, "User found by email");
+    ctx?.logger.debug({ userId: user.id }, "User found by email");
     return user;
   }
 
@@ -62,7 +62,7 @@ export default class UserServices implements UserServiceInterface {
   ): Promise<IUser> {
     const { email, lastname, firstname, password } = input;
 
-    ctx?.logger?.debug({ email }, "Creating new user in database");
+    ctx?.logger.debug({ email }, "Creating new user in database");
 
     try {
       const [newUser] = await User.create([
@@ -74,12 +74,12 @@ export default class UserServices implements UserServiceInterface {
         },
       ]);
 
-      ctx?.logger?.info({ userId: newUser.id }, "New user created successfully");
+      ctx?.logger.info({ userId: newUser.id }, "New user created successfully");
 
       return newUser;
     } catch (error: any) {
       if (error.code === 11000) {
-        ctx?.logger?.warn(
+        ctx?.logger.warn(
           { email },
           "Attempt to register with an already registered email",
         );

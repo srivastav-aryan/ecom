@@ -17,7 +17,7 @@ export class BrandService implements IBrandService {
     input: CreateBrandInput,
     ctx?: RequestContext,
   ): Promise<IBrand> {
-    ctx?.logger?.info({ Brandname: input.name }, "Creating brand");
+    ctx?.logger.info({ Brandname: input.name }, "Creating brand");
 
     try {
       const slug = input.slug ?? generateSlug(input.name);
@@ -29,12 +29,12 @@ export class BrandService implements IBrandService {
         logo: input.logo,
       });
 
-      ctx?.logger?.info({ brandId: brand.id }, "Brand created");
+      ctx?.logger.info({ brandId: brand.id }, "Brand created");
 
       return brand;
     } catch (error: any) {
       if (error.code === 11000) {
-        ctx?.logger?.warn(
+        ctx?.logger.warn(
           { slug: input.slug },
           "Attempt to create a brand with an already registered slug or name",
         );
@@ -48,19 +48,19 @@ export class BrandService implements IBrandService {
     }
   }
   async getBrandById(id: string, ctx?: RequestContext): Promise<IBrand> {
-    ctx?.logger?.debug({ brandId: id }, "Fetching brand by ID");
+    ctx?.logger.debug({ brandId: id }, "Fetching brand by ID");
     const brand = await Brand.findById(id).lean();
     if (!brand) {
-      ctx?.logger?.warn({ brandId: id }, "Brand not found");
+      ctx?.logger.warn({ brandId: id }, "Brand not found");
       throw new CatalogError("BRAND_NOT_FOUND", "Brand not found", 404);
     }
     return brand as IBrand;
   }
   async getBrandBySlug(slug: string, ctx?: RequestContext): Promise<IBrand> {
-    ctx?.logger?.debug({ slug }, "Fetching brand by slug");
+    ctx?.logger.debug({ slug }, "Fetching brand by slug");
     const brand = await Brand.findOne({ slug }).lean();
     if (!brand) {
-      ctx?.logger?.warn({ slug }, "Brand not found");
+      ctx?.logger.warn({ slug }, "Brand not found");
       throw new CatalogError("BRAND_NOT_FOUND", "Brand not found", 404);
     }
     return brand as IBrand;
@@ -70,7 +70,7 @@ export class BrandService implements IBrandService {
     query: BrandListQuery,
     ctx?: RequestContext,
   ): Promise<PaginatedResult<IBrand>> {
-    ctx?.logger?.debug({ query }, "Fetching brands based on query");
+    ctx?.logger.debug({ query }, "Fetching brands based on query");
 
     // service level validation for query params after zod validation
     const { page, limit, skip } = parsePagination(query.page, query.limit);
@@ -99,8 +99,8 @@ export class BrandService implements IBrandService {
     input: UpdateBrandInput,
     ctx?: RequestContext,
   ): Promise<IBrand> {
-    ctx?.logger?.info({ brandId: id }, "Updating brand");
-    ctx?.logger?.debug({ input }, "Update payload");
+    ctx?.logger.info({ brandId: id }, "Updating brand");
+    ctx?.logger.debug({ input }, "Update payload");
 
     try {
       const brand = await Brand.findByIdAndUpdate(
@@ -113,11 +113,11 @@ export class BrandService implements IBrandService {
         throw new CatalogError("BRAND_NOT_FOUND", "Brand not found", 404);
       }
 
-      ctx?.logger?.info({ brandId: id }, "Brand updated");
+      ctx?.logger.info({ brandId: id }, "Brand updated");
       return brand as IBrand;
     } catch (error: any) {
       if (error.code === 11000) {
-        ctx?.logger?.warn(
+        ctx?.logger.warn(
           { brandId: id },
           "Attempt to update a brand with an already registered name",
         );
@@ -132,7 +132,7 @@ export class BrandService implements IBrandService {
   }
 
   async softDeleteBrand(id: string, ctx?: RequestContext): Promise<void> {
-    ctx?.logger?.info({ brandId: id }, "Soft deleting brand");
+    ctx?.logger.info({ brandId: id }, "Soft deleting brand");
 
     const brand = await Brand.findOneAndUpdate(
       { _id: id, isActive: true },
@@ -141,23 +141,23 @@ export class BrandService implements IBrandService {
     );
 
     if (!brand) {
-      ctx?.logger?.info({ brandId: id }, "Brand already deleted or not found");
+      ctx?.logger.info({ brandId: id }, "Brand already deleted or not found");
       return; // idempotent success
     }
 
-    ctx?.logger?.info({ brandId: id }, "Brand soft deleted");
+    ctx?.logger.info({ brandId: id }, "Brand soft deleted");
     return;
   }
 
   async hardDeleteBrand(id: string, ctx?: RequestContext): Promise<void> {
-    ctx?.logger?.info({ brandId: id }, "Hard deleting brand");
+    ctx?.logger.info({ brandId: id }, "Hard deleting brand");
 
     // indexed so search will be efficient
     const linkedProduct = await Product.exists({
       brand: id,
     });
     if (linkedProduct) {
-      ctx?.logger?.warn({ brandId: id }, "Brand is linked to products");
+      ctx?.logger.warn({ brandId: id }, "Brand is linked to products");
       throw new CatalogError(
         "BRAND_HAS_PRODUCTS",
         "Brand is linked to products and cannot be hard deleted",
@@ -166,11 +166,11 @@ export class BrandService implements IBrandService {
     }
     const brand = await Brand.findByIdAndDelete(id);
     if (!brand) {
-      ctx?.logger?.info({ brandId: id }, "Brand already deleted or not found");
+      ctx?.logger.info({ brandId: id }, "Brand already deleted or not found");
       return; // idempotent success
     }
     // ********************Tiny Race condition window here since 2 db calls in  different collections but is ok if there is no concurrent catalogue operations**********
-    ctx?.logger?.info({ brandId: id }, "Brand hard deleted");
+    ctx?.logger.info({ brandId: id }, "Brand hard deleted");
     return;
   }
 }

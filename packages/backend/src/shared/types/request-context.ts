@@ -8,7 +8,7 @@ import pino from "pino";
  */
 export interface RequestContext {
   /** Request-scoped logger with request ID correlation */
-  logger?: pino.Logger;
+  logger: pino.Logger;
   
   /** User agent string from request headers */
   deviceInfo?: string;

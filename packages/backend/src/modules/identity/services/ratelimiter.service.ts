@@ -12,7 +12,7 @@ export default class RateLimiterService {
 
   checkRateLimit(
     identifier: string,
-    logger?: pino.Logger
+    logger: pino.Logger
   ): {
     allowed: boolean;
     remainingAttempts: number;
@@ -25,26 +25,26 @@ export default class RateLimiterService {
     if (!user) {
       const timeOut = setTimeout(() => {
         this.attemptsByUsers.delete(identifier);
-        logger?.info({ identifier }, "Rate limit window expired, resetting");
+        logger.info({ identifier }, "Rate limit window expired, resetting");
       }, this.windowMs);
 
       user = { attemptCount: 0, timeOut };
       this.attemptsByUsers.set(identifier, user);
 
-      logger?.info(
+      logger.info(
         { identifier, windowMs: this.windowMs, maxAttempt: this.maxAttempt },
         "Initialized rate limiter for new identifier"
       );
     }
 
     user.attemptCount++;
-    logger?.debug(
+    logger.debug(
       { identifier, attempt: user.attemptCount },
       "Attempt recorded"
     );
 
     if (user.attemptCount > this.maxAttempt) {
-      logger?.warn(
+      logger.warn(
         { identifier, attempt: user.attemptCount },
         "Rate limit exceeded"
       );
