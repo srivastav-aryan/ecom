@@ -1,15 +1,9 @@
 import { NextFunction, Request, Response } from "express";
 import { IBrandService } from "../interfaces/brand.service.interface.js";
-import { RequestContext } from "../../../shared/types/request-context.js";
 import { BrandResponse } from "@e-com/shared/types";
 import { IBrand } from "../models/brand.model.js";
+import { createCtx } from "../../../shared/utils/ctx.utils.js";
 
-const createCtx = (req: Request, route: string): RequestContext => ({
-  logger: req.log?.child({ route }),
-  deviceInfo: req.headers["user-agent"] || "unknown",
-  ip: req.ip || "unknown",
-  requestId: req.id,
-});
 
 /**
  * Maps an internal IBrand (Mongoose document) to a BrandResponse (API contract).
