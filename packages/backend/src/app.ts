@@ -8,7 +8,7 @@ import { randomUUID } from "node:crypto";
 import { globalErrorHandler } from "./shared/middlewares/globalErrorHandler.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
-import { authRouter, brandRouter } from "./composition/app.composition.js";
+import { authRouter, brandRouter , categoryRouter} from "./composition/app.composition.js";
 
 const setupMiddleWares = (app: express.Application): void => {
   app.use(
@@ -110,6 +110,7 @@ export const createApp = (): express.Application => {
 
   // Catalog endpoints
   app.use("/api/catalog/brands", brandRouter);
+  app.use("/api/catalog/categories", categoryRouter)
 
   //global error handler
   app.use(globalErrorHandler);

@@ -20,6 +20,10 @@ import {
   BrandControllerInterface,
   createBrandRouter,
 } from "../modules/catalog/index.js";
+import { CategoryService } from "../modules/catalog/services/category.service.js";
+import { ICategoryContollerInterface } from "../modules/catalog/interfaces/category.controller.interface.js";
+import { categoryControllerCreator } from "../modules/catalog/controllers/category.controller.js";
+import { createCategoryRouter } from "../modules/catalog/routes/category.routes.js";
 
 // ******** Identity Module ********
 // --- Services ---
@@ -51,3 +55,11 @@ const brandService = new BrandService();
 export const brandController: BrandControllerInterface = brandControllerCreator(brandService);
 // --- Router ---
 export const brandRouter = createBrandRouter(brandController, authenticateMiddlware);
+
+
+// --- Services----
+const categoryService = new CategoryService();
+// --- Controllers ---
+export const categoryController: ICategoryContollerInterface  = categoryControllerCreator(categoryService);
+// --- Router ---
+export const categoryRouter = createCategoryRouter(categoryController, authenticateMiddlware);
