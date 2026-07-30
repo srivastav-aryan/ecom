@@ -5,6 +5,7 @@ import { env } from "../config/env.js";
 import { JWTError } from "../../modules/identity/index.js";
 import { ErrorResponse } from "@e-com/shared/types";
 import { CatalogError } from "../../modules/catalog/index.js";
+import { logger } from "../utils/logging.utils.js";
 
 // globall error handler
 export const globalErrorHandler = (
@@ -18,7 +19,15 @@ export const globalErrorHandler = (
   let errors: any = undefined;
   let code;
 
-  if (err instanceof ApiError) {
+  if (err instanceof JWTError) {
+    statusCode = err.statusCode;
+    message = err.message;
+    code = err.code;
+  } else if (err instanceof CatalogError) {
+    statusCode = err.statusCode;
+    message = err.message;
+    code = err.code;
+  } else if (err instanceof ApiError) {
     // for user errors
     statusCode = err.statusCode;
     message = err.message;
@@ -32,21 +41,14 @@ export const globalErrorHandler = (
       message: error.message,
     }));
   }
-  else if (err instanceof JWTError){
-    statusCode = err.statusCode
-    message = err.message
-    code = err.code
-  }
-  else if (err instanceof CatalogError) {
-    statusCode = err.statusCode;
-    message = err.message;
-    code = err.code;
-  }
 
-  // log for debuging
-  console.error(
-    `error occured with statusCode:- ${statusCode} and message:-${message}`
-  );
+  // log for debugging
+  const activeLogger = req.log || logger;
+  if (statusCode >= 500) {
+    activeLogger.error(err, `Server error: ${message}`);
+  } else {
+    activeLogger.warn({ statusCode, code, url: req.url }, `Operational error: ${message}`);
+  }
   
   const errorResponse: ErrorResponse = {
     success: false,
