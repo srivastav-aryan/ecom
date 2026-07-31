@@ -11,6 +11,10 @@ import {
   buildPaginationMeta,
 } from "../../../shared/utils/pagination.utils.js";
 import { Product } from "../models/product.model.js";
+import {
+  getDuplicateKeyField,
+  isMongoDuplicateKeyError,
+} from "../../../shared/utils/mongo.utils.js";
 
 export class BrandService implements IBrandService {
   async createBrand(
@@ -32,15 +36,21 @@ export class BrandService implements IBrandService {
       ctx?.logger.info({ brandId: brand.id }, "Brand created");
 
       return brand.toObject();
-    } catch (error: any) {
-      if (error.code === 11000) {
+    } catch (error: unknown) {
+      if (error instanceof CatalogError) throw error;
+
+      if (isMongoDuplicateKeyError(error)) {
+        const field = getDuplicateKeyField(error);
+        const value = error.keyValue[field];
+
         ctx?.logger.warn(
-          { slug: input.slug },
-          "Attempt to create a brand with an already registered slug or name",
+          { field, value, name: input.name },
+          "Duplicate brand field on create",
         );
+
         throw new CatalogError(
           "BRAND_ALREADY_EXISTS",
-          "The slug or name is already registered. Please use a different one",
+          `Brand ${field} already exists`,
           409,
         );
       }
@@ -115,15 +125,21 @@ export class BrandService implements IBrandService {
 
       ctx?.logger?.info({ brandId: id }, "Brand updated");
       return brand;
-    } catch (error: any) {
-      if (error.code === 11000) {
+    } catch (error: unknown) {
+      if (error instanceof CatalogError) throw error;
+
+      if (isMongoDuplicateKeyError(error)) {
+        const field = getDuplicateKeyField(error);
+        const value = error.keyValue[field];
+
         ctx?.logger.warn(
-          { brandId: id },
-          "Attempt to update a brand with an already registered name",
+          { brandId: id, field, value },
+          "Duplicate brand field on update",
         );
+
         throw new CatalogError(
           "BRAND_ALREADY_EXISTS",
-          "The name is already registered. Please use a different one",
+          `Brand ${field} already exists`,
           409,
         );
       }
