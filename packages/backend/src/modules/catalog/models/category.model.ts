@@ -45,18 +45,22 @@ const categorySchema = new mongoose.Schema(
   { timestamps: true },
 );
 
-// Supports listing direct children: GET /categories?parent=<id>&isActive=true
+
+
 categorySchema.index({ parent: 1, isActive: 1 });
 
 type CategoryProps = InferSchemaType<typeof categorySchema>;
 
 export type LeanCategory = Omit<CategoryProps, "parent"> & {
   _id: mongoose.Types.ObjectId;
-  parent: mongoose.Types.ObjectId | null;
+  parent?: mongoose.Types.ObjectId | null;
   createdAt: Date;
   updatedAt: Date;
 };
 
 export type CategoryDocument = HydratedDocument<CategoryProps>;
 
-export const Category = mongoose.model<CategoryProps>("Category", categorySchema);
+export const Category = mongoose.model<CategoryProps>(
+  "Category",
+  categorySchema,
+);

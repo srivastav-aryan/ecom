@@ -12,6 +12,7 @@ export const createCategoryRouter = (
 ) => {
   const categoryRouter = express.Router();
 
+  // POST create category
   categoryRouter.post(
     "/",
     authenticate,
