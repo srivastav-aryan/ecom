@@ -1,7 +1,7 @@
 import { CreateBrandInput, UpdateBrandInput } from "@e-com/shared/schemas";
 import { IBrandService } from "../interfaces/brand.service.interface.js";
 import { RequestContext } from "../../../shared/types/request-context.js";
-import { IBrand, Brand } from "../models/brand.model.js";
+import { LeanBrand, Brand } from "../models/brand.model.js";
 import { generateSlug } from "../../../shared/utils/slug.utils.js";
 import { CatalogError } from "../errors/catalog.errors.js";
 import { BrandListQuery } from "@e-com/shared/schemas";
@@ -16,8 +16,8 @@ export class BrandService implements IBrandService {
   async createBrand(
     input: CreateBrandInput,
     ctx?: RequestContext,
-  ): Promise<IBrand> {
-    ctx?.logger.info({ Brandname: input.name }, "Creating brand");
+  ): Promise<LeanBrand> {
+    ctx?.logger?.info({ Brandname: input.name }, "Creating brand");
 
     try {
       const slug = input.slug ?? generateSlug(input.name);
@@ -31,7 +31,7 @@ export class BrandService implements IBrandService {
 
       ctx?.logger.info({ brandId: brand.id }, "Brand created");
 
-      return brand;
+      return brand.toObject();
     } catch (error: any) {
       if (error.code === 11000) {
         ctx?.logger.warn(
@@ -47,30 +47,30 @@ export class BrandService implements IBrandService {
       throw error;
     }
   }
-  async getBrandById(id: string, ctx?: RequestContext): Promise<IBrand> {
-    ctx?.logger.debug({ brandId: id }, "Fetching brand by ID");
+  async getBrandById(id: string, ctx?: RequestContext): Promise<LeanBrand> {
+    ctx?.logger?.debug({ brandId: id }, "Fetching brand by ID");
     const brand = await Brand.findById(id).lean();
     if (!brand) {
       ctx?.logger.warn({ brandId: id }, "Brand not found");
       throw new CatalogError("BRAND_NOT_FOUND", "Brand not found", 404);
     }
-    return brand as IBrand;
+    return brand;
   }
-  async getBrandBySlug(slug: string, ctx?: RequestContext): Promise<IBrand> {
-    ctx?.logger.debug({ slug }, "Fetching brand by slug");
+  async getBrandBySlug(slug: string, ctx?: RequestContext): Promise<LeanBrand> {
+    ctx?.logger?.debug({ slug }, "Fetching brand by slug");
     const brand = await Brand.findOne({ slug }).lean();
     if (!brand) {
       ctx?.logger.warn({ slug }, "Brand not found");
       throw new CatalogError("BRAND_NOT_FOUND", "Brand not found", 404);
     }
-    return brand as IBrand;
+    return brand;
   }
 
   async listBrands(
     query: BrandListQuery,
     ctx?: RequestContext,
-  ): Promise<PaginatedResult<IBrand>> {
-    ctx?.logger.debug({ query }, "Fetching brands based on query");
+  ): Promise<PaginatedResult<LeanBrand>> {
+    ctx?.logger?.debug({ query }, "Fetching brands based on query");
 
     // service level validation for query params after zod validation
     const { page, limit, skip } = parsePagination(query.page, query.limit);
@@ -89,7 +89,7 @@ export class BrandService implements IBrandService {
       Brand.find(filter).sort({ name: 1 }).skip(skip).limit(limit).lean(),
     ]);
     return {
-      items: brands as IBrand[],
+      items: brands,
       pagination: buildPaginationMeta(totalCount, page, limit),
     };
   }
@@ -98,9 +98,9 @@ export class BrandService implements IBrandService {
     id: string,
     input: UpdateBrandInput,
     ctx?: RequestContext,
-  ): Promise<IBrand> {
-    ctx?.logger.info({ brandId: id }, "Updating brand");
-    ctx?.logger.debug({ input }, "Update payload");
+  ): Promise<LeanBrand> {
+    ctx?.logger?.info({ brandId: id }, "Updating brand");
+    ctx?.logger?.debug({ input }, "Update payload");
 
     try {
       const brand = await Brand.findByIdAndUpdate(
@@ -113,8 +113,8 @@ export class BrandService implements IBrandService {
         throw new CatalogError("BRAND_NOT_FOUND", "Brand not found", 404);
       }
 
-      ctx?.logger.info({ brandId: id }, "Brand updated");
-      return brand as IBrand;
+      ctx?.logger?.info({ brandId: id }, "Brand updated");
+      return brand;
     } catch (error: any) {
       if (error.code === 11000) {
         ctx?.logger.warn(

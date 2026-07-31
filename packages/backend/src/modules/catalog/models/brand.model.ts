@@ -1,14 +1,6 @@
-import mongoose from "mongoose";
+import mongoose, { InferSchemaType, HydratedDocument } from "mongoose";
 
-export interface IBrand extends Document {
-  name: string;
-  slug: string;
-  description?: string;
-  logo?: string;
-  isActive: boolean;
-}
-
-const brandSchema = new mongoose.Schema<IBrand>(
+const brandSchema = new mongoose.Schema(
   {
     name: {
       type: String,
@@ -39,4 +31,14 @@ const brandSchema = new mongoose.Schema<IBrand>(
   { timestamps: true },
 );
 
-export const Brand = mongoose.model<IBrand>("Brand", brandSchema);
+type BrandProps = InferSchemaType<typeof brandSchema>;
+
+export type LeanBrand = BrandProps & {
+  _id: mongoose.Types.ObjectId;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type BrandDocument = HydratedDocument<BrandProps>;
+
+export const Brand = mongoose.model<BrandProps>("Brand", brandSchema);
