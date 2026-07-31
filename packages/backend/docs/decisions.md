@@ -113,6 +113,79 @@ Rely on Mongoose v6+ default behavior: **`undefined` values are stripped from `$
 
 ---
 
+## DEC-004: Atomic Unique Index Constraints (No Pre-flight Checks)
+
+**Date**: 2026-07-31
+**Status**: Accepted
+**Applies to**: Brand, Category, Product, Variant (slugs, names, SKUs)
+
+### Context
+
+When creating or updating entities with uniqueness constraints (like slugs or SKUs), we need to handle name/slug/SKU collisions. Should we query the database beforehand to check if the value is taken, or rely directly on MongoDB unique indexes?
+
+### Decision
+
+**Do not do pre-flight "existence" checks.** Rely purely on MongoDB's unique indexes and catch the `11000` duplicate key error in the service layer, translating it to a `CatalogError` (HTTP 409 Conflict).
+
+### Rationale
+
+- **TOCTOU Race Condition**: Doing a query first (e.g. `findOne({ slug })`) introduces a Time-of-Check to Time-of-Use race condition. If two requests search for the same slug concurrently, both will find that it does not exist, both will attempt to write, and the second one will throw a database error anyway.
+- **Performance**: Pre-flight queries double the number of database round-trips for every create and update operation. Relying on the unique index handles existence and validation in a single atomic database operation.
+
+### Tradeoff Accepted
+
+We write code to catch database-level `11000` exceptions, which couples our service error-parsing logic to Mongoose/MongoDB error structures (like `error.code === 11000`).
+
+---
+
+## DEC-005: Accepted Race Condition in Category Parent Validation
+
+**Date**: 2026-07-31
+**Status**: Accepted
+**Applies to**: `CategoryService.createCategory`
+
+### Context
+
+When creating a subcategory, we must validate that the `parent` category exists and is currently active. However, since the existence/active check and the creation of the subcategory are two separate database operations, a race condition exists.
+
+### Decision
+
+**Accept the check-then-write race condition window.** We perform `Category.findById(parent).select('isActive').lean()` to verify the parent, and then perform `Category.create(...)` in the next statement. We do not use database transactions or locks to block concurrent modifications to the parent category.
+
+### Rationale
+
+- **Operational Profile**: Category creation/hierarchy updates are low-frequency admin operations. The likelihood of a parent category being deactivated or deleted by one administrator in the exact millisecond between another administrator creating a subcategory is practically zero.
+- **Overhead**: Forcing MongoDB transactions or locks on category CRUD would introduce substantial performance and setup overhead for a scenario that has no real-world impact.
+- **Optimization**: The parent check is optimized using `.select('isActive')` and `.lean()` to fetch only the minimum required data and bypass full Mongoose document hydration.
+
+### Revisit Conditions
+
+If admin operations scale to where multiple automated catalog sync operations occur concurrently and produce orphaned categories, we will introduce MongoDB session transactions to execute these checks atomically.
+
+---
+
+## DEC-006: Zod-First Request Validation and Lean Service Layer
+
+**Date**: 2026-07-31
+**Status**: Accepted
+**Applies to**: All REST API endpoints and Service Layers
+
+### Context
+
+Where should request body and parameter validation (checking missing fields, correct formats, boundaries) be enforced? Should the service layer replicate these validation checks?
+
+### Decision
+
+**Enforce strict schema validation at the Express middleware layer using Zod.** The service layer receives pre-validated inputs typed via Zod schemas (`CreateCategoryInput`, etc.) and assumes they are completely correct in terms of format, type, and range. The service layer handles only database-level, stateful, and domain constraints.
+
+### Rationale
+
+- **Single Source of Truth**: Sharing Zod schemas between the frontend and backend ensures contract consistency.
+- **No Duplicate Logic**: Validating inputs at the controller/middleware layer prevents cluttering service code with format-validation boilerplate (e.g. "is name empty?").
+- **Clarity of Errors**: Validation failures immediately respond with `400 Bad Request` and detailed error paths, bypassing service execution entirely.
+
+---
+
 <!-- Template for new decisions:
 
 ## DEC-XXX: [Title]
