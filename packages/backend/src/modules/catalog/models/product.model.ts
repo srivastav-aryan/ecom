@@ -1,20 +1,6 @@
-import mongoose, { Document } from "mongoose";
+import mongoose, { InferSchemaType, HydratedDocument } from "mongoose";
 
-export interface IProduct extends Document {
-  vendorId: string;
-  name: string;
-  slug: string;
-  description: string;
-  category: mongoose.Types.ObjectId;
-  brand: mongoose.Types.ObjectId;
-  hsnCode: string;
-  gstRate: number;
-  isActive: boolean;
-  images: string[];
-  tags: string[];
-}
-
-const productSchema = new mongoose.Schema<IProduct>(
+const productSchema = new mongoose.Schema(
   {
     vendorId: {
       type: String,
@@ -66,10 +52,20 @@ const productSchema = new mongoose.Schema<IProduct>(
   { timestamps: true },
 );
 
-
-
 productSchema.index({ slug: 1 }, { unique: true }); // this is ok for single vendor, but not for multi-vendor
 productSchema.index({ category: 1 , isActive: 1});
 productSchema.index({ brand: 1 , isActive: 1})
 
-export const Product = mongoose.model<IProduct>("Product", productSchema);
+type ProductProps = InferSchemaType<typeof productSchema>;
+
+export type LeanProduct = Omit<ProductProps, "category" | "brand"> & {
+  _id: mongoose.Types.ObjectId;
+  category: mongoose.Types.ObjectId;
+  brand: mongoose.Types.ObjectId;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type ProductDocument = HydratedDocument<ProductProps>;
+
+export const Product = mongoose.model<ProductProps>("Product", productSchema);

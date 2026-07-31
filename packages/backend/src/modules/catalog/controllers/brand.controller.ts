@@ -1,8 +1,8 @@
 import { NextFunction, Request, Response } from "express";
 import { IBrandService } from "../interfaces/brand.service.interface.js";
-import { RequestContext } from "../../../shared/types/request-context.js";
 import { BrandResponse } from "@e-com/shared/types";
-import { IBrand } from "../models/brand.model.js";
+import { LeanBrand, BrandDocument } from "../models/brand.model.js";
+import { RequestContext } from "../../../shared/types/request-context.js";
 
 const createCtx = (req: Request, route: string): RequestContext => ({
   logger: req.log?.child({ route }),
@@ -12,19 +12,19 @@ const createCtx = (req: Request, route: string): RequestContext => ({
 });
 
 /**
- * Maps an internal IBrand (Mongoose document) to a BrandResponse (API contract).
+ * Maps an internal LeanBrand or BrandDocument to a BrandResponse (API contract).
  * This is the ONLY place where DB shape meets client shape.
- * If IBrand or BrandResponse changes, this function is the single point of update.
+ * If LeanBrand/BrandDocument or BrandResponse changes, this function is the single point of update.
  */
-const toBrandResponse = (brand: IBrand): BrandResponse => ({
-  id: (brand as any)._id.toString(),
+const toBrandResponse = (brand: LeanBrand | BrandDocument): BrandResponse => ({
+  id: brand._id.toString(),
   name: brand.name,
   slug: brand.slug,
   description: brand.description,
   logo: brand.logo ?? null,
   isActive: brand.isActive,
-  createdAt: (brand as any).createdAt.toISOString(),
-  updatedAt: (brand as any).updatedAt.toISOString(),
+  createdAt: brand.createdAt.toISOString(),
+  updatedAt: brand.updatedAt.toISOString(),
 });
 
 export const brandControllerCreator = (brandService: IBrandService) => {

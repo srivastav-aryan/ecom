@@ -1,33 +1,6 @@
-import mongoose, { Document } from "mongoose";
+import mongoose, { InferSchemaType, HydratedDocument } from "mongoose";
 
-export interface IProductVariant extends Document {
-  name: string;
-  slug: string;
-  description: string;
-  images: string[];
-  productId: mongoose.Types.ObjectId;
-
-  // --- Inventory state machine ---
-  stockQuantity: number;
-  reservedQuantity: number;
-
-  sku: string;
-  weightInGrams: number;
-
-  // --- Flexible Attributes Array ---
-  attributes: {
-    name: string; // e.g., "Color", "Size", "RAM", "Material"
-    value: string; // e.g., "Red", "XL", "16GB", "Cotton"
-    meta?: string; // e.g., "#FF0000" (Optional UI helper, like a hex code)
-  }[];
-
-  sellingPrice: number;
-  costPrice?: number;
-  mrp: number;
-  isActive: boolean;
-}
-
-const productVariantSchema = new mongoose.Schema<IProductVariant>(
+const productVariantSchema = new mongoose.Schema(
   {
     name: {
       type: String,
@@ -111,7 +84,19 @@ productVariantSchema.virtual("availableStock").get(function() {
   return this.stockQuantity - this.reservedQuantity;
 });
 
-export const ProductVariant = mongoose.model<IProductVariant>(
+type ProductVariantProps = InferSchemaType<typeof productVariantSchema>;
+
+export type LeanProductVariant = Omit<ProductVariantProps, "productId"> & {
+  _id: mongoose.Types.ObjectId;
+  productId: mongoose.Types.ObjectId;
+  createdAt: Date;
+  updatedAt: Date;
+  availableStock: number; // Virtual field typed
+};
+
+export type ProductVariantDocument = HydratedDocument<ProductVariantProps>;
+
+export const ProductVariant = mongoose.model<ProductVariantProps>(
   "ProductVariant",
   productVariantSchema,
 );

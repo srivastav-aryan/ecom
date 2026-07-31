@@ -1,8 +1,8 @@
 //Models
-export { Product, type IProduct } from "./models/product.model.js";
-export { ProductVariant, type IProductVariant } from "./models/productVariant.model.js";
-export { Category, type ICategory } from "./models/category.model.js";
-export { Brand, type IBrand } from "./models/brand.model.js";
+export { Product, type LeanProduct, type ProductDocument } from "./models/product.model.js";
+export { ProductVariant, type LeanProductVariant, type ProductVariantDocument } from "./models/productVariant.model.js";
+export { Category, type LeanCategory, type CategoryDocument } from "./models/category.model.js";
+export { Brand, type LeanBrand, type BrandDocument } from "./models/brand.model.js";
 
 // Services
 export { BrandService } from "./services/brand.service.js";
