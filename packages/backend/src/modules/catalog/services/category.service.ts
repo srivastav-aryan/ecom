@@ -4,6 +4,10 @@ import { ICategoryServices } from "../interfaces/category.service.interface.js";
 import { generateSlug } from "../../../shared/utils/slug.utils.js";
 import { Category, LeanCategory } from "../models/category.model.js";
 import { CatalogError } from "../errors/catalog.errors.js";
+import {
+  getDuplicateKeyField,
+  isMongoDuplicateKeyError,
+} from "../../../shared/utils/mongo.utils.js";
 
 export class CategoryService implements ICategoryServices {
   async createCategory(
@@ -24,7 +28,7 @@ export class CategoryService implements ICategoryServices {
 
         ctx?.logger.info({ categoryId: category.id }, "Category created");
 
-        return category;
+        return category.toObject();
       }
 
       let parentDoc;
@@ -57,15 +61,21 @@ export class CategoryService implements ICategoryServices {
       ctx?.logger.info({ categoryId: category.id }, "Category created");
 
       return category.toObject();
-    } catch (error: any) {
-      if (error.code === 11000) {
+    } catch (error: unknown) {
+      if (error instanceof CatalogError) throw error;
+
+      if (isMongoDuplicateKeyError(error)) {
+        const field = getDuplicateKeyField(error);
+        const value = error.keyValue[field];
+
         ctx?.logger.warn(
-          { slug: input.slug },
-          "Attempt to create a category with an already registered slug or name",
+          { field, value, name: input.name },
+          "Duplicate category field on create",
         );
+
         throw new CatalogError(
           "CATEGORY_ALREADY_EXISTS",
-          "The slug or name is already registered. Please use a different one",
+          `Category ${field} already exists`,
           409,
         );
       }

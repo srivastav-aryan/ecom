@@ -7,6 +7,7 @@ import { CategoryResponse } from "@e-com/shared/types";
 
 
 const toCategoryResponse = (category: LeanCategory | CategoryDocument): CategoryResponse => ({
+  id: category._id.toString(),
   name: category.name,
   slug: category.slug,
   description: category.description,
