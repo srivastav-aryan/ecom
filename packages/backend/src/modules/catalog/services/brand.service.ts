@@ -41,7 +41,7 @@ export class BrandService implements IBrandService {
 
       if (isMongoDuplicateKeyError(error)) {
         const field = getDuplicateKeyField(error);
-        const value = error.keyValue[field];
+        const value = error.keyValue?.[field];
 
         ctx?.logger.warn(
           { field, value, name: input.name },
@@ -130,7 +130,7 @@ export class BrandService implements IBrandService {
 
       if (isMongoDuplicateKeyError(error)) {
         const field = getDuplicateKeyField(error);
-        const value = error.keyValue[field];
+        const value = error.keyValue?.[field];
 
         ctx?.logger.warn(
           { brandId: id, field, value },

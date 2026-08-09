@@ -13,12 +13,18 @@ export function isMongoDuplicateKeyError(
 ): error is MongoDuplicateKeyError {
   if (typeof error !== "object" || error === null) return false;
 
-  const candidate = error as { code?: unknown; keyPattern?: unknown };
+  const candidate = error as {
+    code?: unknown;
+    keyPattern?: unknown;
+    keyValue?: unknown;
+  };
 
   return (
     candidate.code === 11000 &&
     typeof candidate.keyPattern === "object" &&
-    candidate.keyPattern !== null
+    candidate.keyPattern !== null &&
+    typeof candidate.keyValue === "object" &&
+    candidate.keyValue !== null
   );
 }
 
