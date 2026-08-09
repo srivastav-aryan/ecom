@@ -7,7 +7,7 @@ import { ErrorResponse } from "@e-com/shared/types";
 import { CatalogError } from "../../modules/catalog/index.js";
 import { logger } from "../utils/logging.utils.js";
 
-// globall error handler
+// global error handler
 export const globalErrorHandler = (
   err: Error,
   req: Request,

@@ -15,7 +15,7 @@ export class CategoryService implements ICategoryServices {
     ctx?: RequestContext,
   ): Promise<LeanCategory> {
     try {
-      ctx?.logger.info({ Categoryname: input.name }, "creating category");
+      ctx?.logger.info({ categoryName: input.name }, "Creating category");
 
       const slug: string = input.slug ?? generateSlug(input.name);
 
@@ -35,10 +35,10 @@ export class CategoryService implements ICategoryServices {
 
       const parentDoc: LeanCategory | null = await Category.findById(input.parent).lean();
       if (!parentDoc) {
-        ctx?.logger.warn({ parentId: input.parent }, "Parent does not exsist");
+        ctx?.logger.warn({ parentId: input.parent }, "Parent does not exist");
         throw new CatalogError(
           "CATEGORY_NOT_FOUND",
-          "No such parent exsists",
+          "No such parent exists",
           404,
         );
       }
@@ -48,22 +48,17 @@ export class CategoryService implements ICategoryServices {
       const isInActiveAncestors = await Category.findOne({ _id: { $in: ancestors }, isActive: false }).lean();
 
       if (isInActiveAncestors) {
-        ctx?.logger.warn({ ancestor: isInActiveAncestors.name }, "ancestor is inactive");
+        ctx?.logger.warn(
+          { ancestorId: isInActiveAncestors._id, ancestorName: isInActiveAncestors.name },
+          "An ancestor category is inactive",
+        );
         throw new CatalogError(
           "CATEGORY_INACTIVE",
-          "The parent category is inactive",
+          "An ancestor category in this branch is inactive",
           400,
         );
       }
-
-      if (!parentDoc.isActive) {
-        ctx?.logger.warn({ parent: parentDoc.name }, "Parent is not active");
-        throw new CatalogError(
-          "CATEGORY_INACTIVE",
-          "The parent category is inactive",
-          400,
-        );
-      }
+      
       const category = await Category.create({
         name: input.name,
         slug,

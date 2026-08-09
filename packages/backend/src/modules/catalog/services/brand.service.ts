@@ -21,7 +21,7 @@ export class BrandService implements IBrandService {
     input: CreateBrandInput,
     ctx?: RequestContext,
   ): Promise<LeanBrand> {
-    ctx?.logger?.info({ Brandname: input.name }, "Creating brand");
+    ctx?.logger?.info({ brandName: input.name }, "Creating brand");
 
     try {
       const slug = input.slug ?? generateSlug(input.name);
@@ -85,7 +85,7 @@ export class BrandService implements IBrandService {
     // service level validation for query params after zod validation
     const { page, limit, skip } = parsePagination(query.page, query.limit);
 
-    // querry building for passing to the DB query
+    // query building for passing to the DB query
     const filter: Record<string, any> = {
       isActive: query.isActive,
     };

@@ -12,7 +12,7 @@ export { CategoryService } from "./services/category.service.js";
 export type { IBrandService } from "./interfaces/brand.service.interface.js";
 export type { BrandControllerInterface } from "./interfaces/brand.controller.interface.js";
 export type { ICategoryServices } from "./interfaces/category.service.interface.js";
-export type { ICategoryContollerInterface } from "./interfaces/category.controller.interface.js";
+export type { ICategoryControllerInterface } from "./interfaces/category.controller.interface.js";
 
 // Controllers
 export { brandControllerCreator } from "./controllers/brand.controller.js";

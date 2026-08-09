@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { ICategoryContollerInterface } from "../interfaces/category.controller.interface.js";
+import { ICategoryControllerInterface } from "../interfaces/category.controller.interface.js";
 import { ICategoryServices } from "../interfaces/category.service.interface.js";
 import { createCtx } from "../../../shared/utils/ctx.utils.js";
 import { CategoryDocument, LeanCategory } from "../models/category.model.js";
@@ -25,7 +25,7 @@ const toCategoryResponse = (
 
 export const categoryControllerCreator = (
   categoryService: ICategoryServices,
-): ICategoryContollerInterface => {
+): ICategoryControllerInterface => {
   return {
     createCategory: async (req: Request, res: Response, next: NextFunction) => {
       const ctx = createCtx(req, "create_category");
