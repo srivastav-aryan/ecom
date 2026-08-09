@@ -6,13 +6,18 @@ import { CategoryDocument, LeanCategory } from "../models/category.model.js";
 import { CategoryResponse } from "@e-com/shared/types";
 
 
-const toCategoryResponse = (category: LeanCategory | CategoryDocument): CategoryResponse => ({
+const toCategoryResponse = (
+  category: LeanCategory | CategoryDocument,
+  effectivelyActive?: boolean,
+): CategoryResponse => ({
   id: category._id.toString(),
   name: category.name,
   slug: category.slug,
   description: category.description,
   parent: category.parent ? category.parent.toString() : null,
+  ancestors: (category.ancestors ?? []).map((a) => a.toString()),
   isActive: category.isActive,
+  isEffectivelyActive: effectivelyActive ?? category.isActive,
   createdAt: category.createdAt.toISOString(),
   updatedAt: category.updatedAt.toISOString(),
 });
