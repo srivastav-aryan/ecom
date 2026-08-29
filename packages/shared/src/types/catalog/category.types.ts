@@ -7,6 +7,7 @@ export type CategoryResponse = {
   ancestors: string[],
   isActive: boolean,
   isEffectivelyActive: boolean,
+  blockingAncestorId: string | null,
   createdAt: string,
   updatedAt: string,
 } 

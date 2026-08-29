@@ -8,6 +8,12 @@ import {
   getDuplicateKeyField,
   isMongoDuplicateKeyError,
 } from "../../../shared/utils/mongo.utils.js";
+import mongoose from "mongoose";
+
+export type CategoryWithStatus = LeanCategory & {
+  isEffectivelyActive: boolean;
+  blockingAncestorId: mongoose.Types.ObjectId | null;
+};
 
 export class CategoryService implements ICategoryServices {
   async createCategory(
@@ -31,9 +37,9 @@ export class CategoryService implements ICategoryServices {
         return category.toObject();
       }
 
-
-
-      const parentDoc: LeanCategory | null = await Category.findById(input.parent).lean();
+      const parentDoc: LeanCategory | null = await Category.findById(
+        input.parent,
+      ).lean();
       if (!parentDoc) {
         ctx?.logger.warn({ parentId: input.parent }, "Parent does not exist");
         throw new CatalogError(
@@ -45,11 +51,17 @@ export class CategoryService implements ICategoryServices {
 
       const ancestors = [...parentDoc.ancestors, parentDoc._id];
 
-      const isInActiveAncestors = await Category.findOne({ _id: { $in: ancestors }, isActive: false }).lean();
+      const isInActiveAncestors = await Category.findOne({
+        _id: { $in: ancestors },
+        isActive: false,
+      }).lean();
 
       if (isInActiveAncestors) {
         ctx?.logger.warn(
-          { ancestorId: isInActiveAncestors._id, ancestorName: isInActiveAncestors.name },
+          {
+            ancestorId: isInActiveAncestors._id,
+            ancestorName: isInActiveAncestors.name,
+          },
           "An ancestor category is inactive",
         );
         throw new CatalogError(
@@ -58,7 +70,7 @@ export class CategoryService implements ICategoryServices {
           400,
         );
       }
-      
+
       const category = await Category.create({
         name: input.name,
         slug,
@@ -89,6 +101,58 @@ export class CategoryService implements ICategoryServices {
         );
       }
 
+      throw error;
+    }
+  }
+
+  async getCategoryTree(ctx?: RequestContext): Promise<CategoryWithStatus[]> {
+    ctx?.logger.info("Fetching category tree with active status");
+
+    try {
+      const entireCatTree = await Category.find().lean();
+      const categoryMap = new Map<string, LeanCategory>();
+
+      for (const doc of entireCatTree) {
+        categoryMap.set(doc._id.toString(), doc);
+      }
+
+      const categoriesWithStatus: CategoryWithStatus[] = entireCatTree.map((doc) => {
+        if (!doc.isActive) {
+          return {
+            ...doc,
+            isEffectivelyActive: false,
+            blockingAncestorId: null,
+          };
+        }
+
+        for (const ancestorId of doc.ancestors) {
+          const ancestorDoc = categoryMap.get(ancestorId.toString());
+
+          if (!ancestorDoc || !ancestorDoc.isActive) {
+            return {
+              ...doc,
+              isEffectivelyActive: false,
+              blockingAncestorId: ancestorId,
+            };
+          }
+        }
+
+        return {
+          ...doc,
+          isEffectivelyActive: true,
+          blockingAncestorId: null,
+        };
+      });
+
+      ctx?.logger.info(
+        { totalCategories: categoriesWithStatus.length },
+        "Category tree retrieved successfully",
+      );
+
+      return categoriesWithStatus;
+    } catch (error: unknown) {
+      ctx?.logger.error({ err: error }, "Failed to retrieve category tree");
+      if (error instanceof CatalogError) throw error;
       throw error;
     }
   }

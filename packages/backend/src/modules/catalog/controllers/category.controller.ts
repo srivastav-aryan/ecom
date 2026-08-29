@@ -4,11 +4,16 @@ import { ICategoryServices } from "../interfaces/category.service.interface.js";
 import { createCtx } from "../../../shared/utils/ctx.utils.js";
 import { CategoryDocument, LeanCategory } from "../models/category.model.js";
 import { CategoryResponse } from "@e-com/shared/types";
+import { CategoryWithStatus } from "../services/category.service.js";
 
+
+const isCategoryWithStatus = (
+  cat: LeanCategory | CategoryDocument | CategoryWithStatus,
+): cat is CategoryWithStatus =>
+  "isEffectivelyActive" in cat && "blockingAncestorId" in cat;
 
 const toCategoryResponse = (
-  category: LeanCategory | CategoryDocument,
-  effectivelyActive?: boolean,
+  category: LeanCategory | CategoryDocument | CategoryWithStatus,
 ): CategoryResponse => ({
   id: category._id.toString(),
   name: category.name,
@@ -17,7 +22,12 @@ const toCategoryResponse = (
   parent: category.parent ? category.parent.toString() : null,
   ancestors: (category.ancestors ?? []).map((a) => a.toString()),
   isActive: category.isActive,
-  isEffectivelyActive: effectivelyActive ?? category.isActive,
+  isEffectivelyActive: isCategoryWithStatus(category)
+    ? category.isEffectivelyActive
+    : category.isActive,
+  blockingAncestorId: isCategoryWithStatus(category)
+    ? category.blockingAncestorId?.toString() ?? null
+    : null,
   createdAt: category.createdAt.toISOString(),
   updatedAt: category.updatedAt.toISOString(),
 });
@@ -31,7 +41,6 @@ export const categoryControllerCreator = (
       const ctx = createCtx(req, "create_category");
       try {
         const category = await categoryService.createCategory(req.body, ctx);
-
         res.status(201).json({
           success: true,
           data: toCategoryResponse(category),
@@ -41,5 +50,21 @@ export const categoryControllerCreator = (
         next(error);
       }
     },
+
+
+    getAllCategoryTree: async (req: Request, res: Response, next: NextFunction) => {
+      const ctx = createCtx(req, "get_category_tree");
+
+      try {
+        const categories = await categoryService.getCategoryTree(ctx);
+
+        res.status(200).json({
+          success: true,
+          data: categories.map(toCategoryResponse),
+        });
+      } catch (error) {
+        next(error);
+      }
+    }
   };
 };

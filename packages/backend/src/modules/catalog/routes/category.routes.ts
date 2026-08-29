@@ -21,5 +21,9 @@ export const createCategoryRouter = (
     categoryController.createCategory,
   );
 
+
+  // GET Category tree for navbar 
+  categoryRouter.get("/getCategoryTree", categoryController.getAllCategoryTree)
+
   return categoryRouter;
 };
