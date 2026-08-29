@@ -20,6 +20,10 @@ import {
   BrandControllerInterface,
   createBrandRouter,
 } from "../modules/catalog/index.js";
+import { CategoryService } from "../modules/catalog/services/category.service.js";
+import { ICategoryControllerInterface } from "../modules/catalog/interfaces/category.controller.interface.js";
+import { categoryControllerCreator } from "../modules/catalog/controllers/category.controller.js";
+import { createCategoryRouter } from "../modules/catalog/routes/category.routes.js";
 
 // ******** Identity Module ********
 // --- Services ---
@@ -39,7 +43,7 @@ const loginLimiter = new RateLimiterService(
 // --- Controllers ---
 export const authController: AuthControllerInterface = authControllerCreator(authServices, loginLimiter, tokenService);
 // --- Middleware ---
-export const authenticateMiddlware = createAuthMiddleware(tokenService, userServices);
+export const authenticateMiddleware = createAuthMiddleware(tokenService, userServices);
  // -- Router ---
  export const authRouter = createAuthRouter(authController) 
 
@@ -50,4 +54,12 @@ const brandService = new BrandService();
 // --- Controllers ---
 export const brandController: BrandControllerInterface = brandControllerCreator(brandService);
 // --- Router ---
-export const brandRouter = createBrandRouter(brandController, authenticateMiddlware);
+export const brandRouter = createBrandRouter(brandController, authenticateMiddleware);
+
+
+// --- Services----
+const categoryService = new CategoryService();
+// --- Controllers ---
+export const categoryController: ICategoryControllerInterface = categoryControllerCreator(categoryService);
+// --- Router ---
+export const categoryRouter = createCategoryRouter(categoryController, authenticateMiddleware);

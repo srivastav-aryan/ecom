@@ -32,5 +32,6 @@ packages/*/dist/
 *.sln
 *.sw?
 
+
 # personal
 catalog_implementation.md

@@ -6,16 +6,21 @@ export { Brand, type LeanBrand, type BrandDocument } from "./models/brand.model.
 
 // Services
 export { BrandService } from "./services/brand.service.js";
+export { CategoryService } from "./services/category.service.js";
 
 // Interfaces
 export type { IBrandService } from "./interfaces/brand.service.interface.js";
 export type { BrandControllerInterface } from "./interfaces/brand.controller.interface.js";
+export type { ICategoryServices } from "./interfaces/category.service.interface.js";
+export type { ICategoryControllerInterface } from "./interfaces/category.controller.interface.js";
 
 // Controllers
 export { brandControllerCreator } from "./controllers/brand.controller.js";
+export { categoryControllerCreator } from "./controllers/category.controller.js";
 
 // Routes
 export { createBrandRouter } from "./routes/brand.routes.js";
+export { createCategoryRouter } from "./routes/category.routes.js";
 
 
 

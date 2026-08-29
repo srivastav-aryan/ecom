@@ -3,7 +3,7 @@ import { env } from "./env.js";
 
 //Handle connected state
 mongoose.connection.on("connected", () =>
-  console.log("DB connected successfullly")
+  console.log("DB connected successfullly"),
 );
 
 // Handle disconnection events
@@ -28,9 +28,8 @@ const mongo_Options: ConnectOptions = {
 
   bufferCommands: false,
 
-  //   autoIndex: false,
+  autoIndex: env.NODE_ENV === "development" ? true : false,
 };
-
 
 // retrying options
 const DB_RETRY_LIMIT: number = 4;
@@ -54,7 +53,7 @@ const tryDbConnection = async (retry = DB_RETRY_LIMIT): Promise<void> => {
       console.error(`attempt failed trying again in ${currentDelay}`);
       //exponential fallback logic
       await new Promise<void>((res: () => void) =>
-        setTimeout(res, currentDelay)
+        setTimeout(res, currentDelay),
       );
       currentDelay *= 2;
     }

@@ -25,14 +25,14 @@ export class TokenService implements TokenServiceInterface {
 
   verifyAccessToken(token: string, ctx?: RequestContext): AccessTokenPayload {
     try {
-      ctx?.logger?.info({ token }, "Verifying access token");
-      ctx?.logger?.debug({ token }, "Decoding access token");
+      ctx?.logger.info({ token }, "Verifying access token");
+      ctx?.logger.debug({ token }, "Decoding access token");
       const decoded = jwt.verify(
         token,
         env.ACCESS_TOKEN_SECRET,
       ) as AccessTokenPayload;
 
-      ctx?.logger?.debug({ decoded }, "Decoded access token");
+      ctx?.logger.debug({ decoded }, "Decoded access token");
 
       if (!decoded._id || !decoded.email || !decoded.role) {
         throw new JWTError(
@@ -41,26 +41,26 @@ export class TokenService implements TokenServiceInterface {
         );
       }
 
-      ctx?.logger?.debug({ decoded }, "Access token verified");
+      ctx?.logger.debug({ decoded }, "Access token verified");
 
       return decoded;
     } catch (error) {
       if (error instanceof jwt.TokenExpiredError) {
-        ctx?.logger?.warn({ token }, "Access token has expired");
+        ctx?.logger.warn({ token }, "Access token has expired");
         throw new JWTError("access token has EXPIRED", JWT_ERROR_CODES.EXPIRED);
       }
 
       if (error instanceof jwt.JsonWebTokenError) {
-        ctx?.logger?.warn({ token }, "Access token is not valid");
+        ctx?.logger.warn({ token }, "Access token is not valid");
         throw new JWTError("token is not valid", JWT_ERROR_CODES.INVALID);
       }
 
       if (error instanceof JWTError) {
-        ctx?.logger?.warn({ token }, "Access token verification failed");
+        ctx?.logger.warn({ token }, "Access token verification failed");
         throw error;
       }
 
-      ctx?.logger?.error({ token }, "Access token verification failed");
+      ctx?.logger.error({ token }, "Access token verification failed");
       throw new JWTError(
         "Token verification failed",
         JWT_ERROR_CODES.MALFORMED,
@@ -72,14 +72,14 @@ export class TokenService implements TokenServiceInterface {
     decoded: RefreshTokenPayload;
   } {
     try {
-      ctx?.logger?.info({ token }, "Verifying refresh token");
-      ctx?.logger?.debug({ token }, "Decoding refresh token");
+      ctx?.logger.info({ token }, "Verifying refresh token");
+      ctx?.logger.debug({ token }, "Decoding refresh token");
       const decoded = jwt.verify(
         token,
         env.REFRESH_TOKEN_SECRET,
       ) as RefreshTokenPayload;
 
-      ctx?.logger?.debug({ decoded }, "Decoded refresh token");
+      ctx?.logger.debug({ decoded }, "Decoded refresh token");
 
       if (!decoded._id) {
         throw new JWTError(
@@ -88,12 +88,12 @@ export class TokenService implements TokenServiceInterface {
         );
       }
 
-      ctx?.logger?.debug({ decoded }, "Refresh token verified");
+      ctx?.logger.debug({ decoded }, "Refresh token verified");
 
       return { decoded };
     } catch (error) {
       if (error instanceof jwt.TokenExpiredError) {
-        ctx?.logger?.warn({ token }, "Refresh token is expired");
+        ctx?.logger.warn({ token }, "Refresh token is expired");
         throw new JWTError(
           "The refresh token  is expired",
           JWT_ERROR_CODES.EXPIRED,
@@ -101,7 +101,7 @@ export class TokenService implements TokenServiceInterface {
       }
 
       if (error instanceof jwt.JsonWebTokenError) {
-        ctx?.logger?.warn({ token }, "Refresh token is not valid");
+        ctx?.logger.warn({ token }, "Refresh token is not valid");
         throw new JWTError(
           "Refresh token is not valid",
           JWT_ERROR_CODES.INVALID,
@@ -109,11 +109,11 @@ export class TokenService implements TokenServiceInterface {
       }
 
       if (error instanceof JWTError) {
-        ctx?.logger?.warn({ token }, "Refresh token verification failed");
+        ctx?.logger.warn({ token }, "Refresh token verification failed");
         throw error;
       }
 
-      ctx?.logger?.error({ token }, "Refresh token verification failed");
+      ctx?.logger.error({ token }, "Refresh token verification failed");
       throw new JWTError(
         "Refresh token verification failed",
         JWT_ERROR_CODES.MALFORMED,
@@ -126,14 +126,14 @@ export class TokenService implements TokenServiceInterface {
     ctx?: RequestContext,
   ): string {
     if (!authHeader) {
-      ctx?.logger?.warn({ authHeader }, "No auth header provided");
+      ctx?.logger.warn({ authHeader }, "No auth header provided");
       throw new JWTError("Access token not provided", JWT_ERROR_CODES.NO_TOKEN);
     }
 
     const parts = authHeader.split(" ");
 
     if (parts.length !== 2 || parts[0] !== "Bearer") {
-      ctx?.logger?.warn({ authHeader }, "Invalid auth header format");
+      ctx?.logger.warn({ authHeader }, "Invalid auth header format");
       throw new JWTError("Invalid authorization header format", JWT_ERROR_CODES.MALFORMED);
     }
 

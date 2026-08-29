@@ -13,7 +13,7 @@ import { AuthControllerInterface } from "../interfaces/auth.controller.interface
 export interface RateLimiter {
   checkRateLimit: (
     identifier: string,
-    logger?: pino.Logger,
+    logger: pino.Logger,
   ) => {
     allowed: boolean;
     remainingAttempts: number;
@@ -101,7 +101,7 @@ export const authControllerCreator = (
 
         const result = loginLimiter.checkRateLimit(
           email || req.ip,
-          ctx.logger?.child({ email }),
+          ctx.logger.child({ email }),
         );
 
         if (!result.allowed) {

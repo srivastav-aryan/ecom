@@ -11,13 +11,17 @@ import {
   buildPaginationMeta,
 } from "../../../shared/utils/pagination.utils.js";
 import { Product } from "../models/product.model.js";
+import {
+  getDuplicateKeyField,
+  isMongoDuplicateKeyError,
+} from "../../../shared/utils/mongo.utils.js";
 
 export class BrandService implements IBrandService {
   async createBrand(
     input: CreateBrandInput,
     ctx?: RequestContext,
   ): Promise<LeanBrand> {
-    ctx?.logger?.info({ Brandname: input.name }, "Creating brand");
+    ctx?.logger?.info({ brandName: input.name }, "Creating brand");
 
     try {
       const slug = input.slug ?? generateSlug(input.name);
@@ -29,18 +33,24 @@ export class BrandService implements IBrandService {
         logo: input.logo,
       });
 
-      ctx?.logger?.info({ brandId: brand.id }, "Brand created");
+      ctx?.logger.info({ brandId: brand.id }, "Brand created");
 
       return brand.toObject();
-    } catch (error: any) {
-      if (error.code === 11000) {
-        ctx?.logger?.warn(
-          { slug: input.slug },
-          "Attempt to create a brand with an already registered slug or name",
+    } catch (error: unknown) {
+      if (error instanceof CatalogError) throw error;
+
+      if (isMongoDuplicateKeyError(error)) {
+        const field = getDuplicateKeyField(error);
+        const value = error.keyValue?.[field];
+
+        ctx?.logger.warn(
+          { field, value, name: input.name },
+          "Duplicate brand field on create",
         );
+
         throw new CatalogError(
           "BRAND_ALREADY_EXISTS",
-          "The slug or name is already registered. Please use a different one",
+          `Brand ${field} already exists`,
           409,
         );
       }
@@ -51,7 +61,7 @@ export class BrandService implements IBrandService {
     ctx?.logger?.debug({ brandId: id }, "Fetching brand by ID");
     const brand = await Brand.findById(id).lean();
     if (!brand) {
-      ctx?.logger?.warn({ brandId: id }, "Brand not found");
+      ctx?.logger.warn({ brandId: id }, "Brand not found");
       throw new CatalogError("BRAND_NOT_FOUND", "Brand not found", 404);
     }
     return brand;
@@ -60,7 +70,7 @@ export class BrandService implements IBrandService {
     ctx?.logger?.debug({ slug }, "Fetching brand by slug");
     const brand = await Brand.findOne({ slug }).lean();
     if (!brand) {
-      ctx?.logger?.warn({ slug }, "Brand not found");
+      ctx?.logger.warn({ slug }, "Brand not found");
       throw new CatalogError("BRAND_NOT_FOUND", "Brand not found", 404);
     }
     return brand;
@@ -75,7 +85,7 @@ export class BrandService implements IBrandService {
     // service level validation for query params after zod validation
     const { page, limit, skip } = parsePagination(query.page, query.limit);
 
-    // querry building for passing to the DB query
+    // query building for passing to the DB query
     const filter: Record<string, any> = {
       isActive: query.isActive,
     };
@@ -115,15 +125,21 @@ export class BrandService implements IBrandService {
 
       ctx?.logger?.info({ brandId: id }, "Brand updated");
       return brand;
-    } catch (error: any) {
-      if (error.code === 11000) {
-        ctx?.logger?.warn(
-          { brandId: id },
-          "Attempt to update a brand with an already registered name",
+    } catch (error: unknown) {
+      if (error instanceof CatalogError) throw error;
+
+      if (isMongoDuplicateKeyError(error)) {
+        const field = getDuplicateKeyField(error);
+        const value = error.keyValue?.[field];
+
+        ctx?.logger.warn(
+          { brandId: id, field, value },
+          "Duplicate brand field on update",
         );
+
         throw new CatalogError(
           "BRAND_ALREADY_EXISTS",
-          "The name is already registered. Please use a different one",
+          `Brand ${field} already exists`,
           409,
         );
       }
@@ -132,7 +148,7 @@ export class BrandService implements IBrandService {
   }
 
   async softDeleteBrand(id: string, ctx?: RequestContext): Promise<void> {
-    ctx?.logger?.info({ brandId: id }, "Soft deleting brand");
+    ctx?.logger.info({ brandId: id }, "Soft deleting brand");
 
     const brand = await Brand.findOneAndUpdate(
       { _id: id, isActive: true },
@@ -141,23 +157,23 @@ export class BrandService implements IBrandService {
     );
 
     if (!brand) {
-      ctx?.logger?.info({ brandId: id }, "Brand already deleted or not found");
+      ctx?.logger.info({ brandId: id }, "Brand already deleted or not found");
       return; // idempotent success
     }
 
-    ctx?.logger?.info({ brandId: id }, "Brand soft deleted");
+    ctx?.logger.info({ brandId: id }, "Brand soft deleted");
     return;
   }
 
   async hardDeleteBrand(id: string, ctx?: RequestContext): Promise<void> {
-    ctx?.logger?.info({ brandId: id }, "Hard deleting brand");
+    ctx?.logger.info({ brandId: id }, "Hard deleting brand");
 
     // indexed so search will be efficient
     const linkedProduct = await Product.exists({
       brand: id,
     });
     if (linkedProduct) {
-      ctx?.logger?.warn({ brandId: id }, "Brand is linked to products");
+      ctx?.logger.warn({ brandId: id }, "Brand is linked to products");
       throw new CatalogError(
         "BRAND_HAS_PRODUCTS",
         "Brand is linked to products and cannot be hard deleted",
@@ -166,11 +182,11 @@ export class BrandService implements IBrandService {
     }
     const brand = await Brand.findByIdAndDelete(id);
     if (!brand) {
-      ctx?.logger?.info({ brandId: id }, "Brand already deleted or not found");
+      ctx?.logger.info({ brandId: id }, "Brand already deleted or not found");
       return; // idempotent success
     }
     // ********************Tiny Race condition window here since 2 db calls in  different collections but is ok if there is no concurrent catalogue operations**********
-    ctx?.logger?.info({ brandId: id }, "Brand hard deleted");
+    ctx?.logger.info({ brandId: id }, "Brand hard deleted");
     return;
   }
 }

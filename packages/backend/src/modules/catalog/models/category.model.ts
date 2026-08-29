@@ -10,7 +10,6 @@ const categorySchema = new mongoose.Schema(
     name: {
       type: String,
       required: true,
-      unique: true,
       trim: true,
       minlength: 1,
       maxlength: MAX_NAME_LENGTH,
@@ -37,6 +36,11 @@ const categorySchema = new mongoose.Schema(
       required: false,
       default: null,
     },
+   ancestors: {
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: "Category",
+      default: [],
+    },
     isActive: {
       type: Boolean,
       default: true,
@@ -45,18 +49,26 @@ const categorySchema = new mongoose.Schema(
   { timestamps: true },
 );
 
-// Supports listing direct children: GET /categories?parent=<id>&isActive=true
 categorySchema.index({ parent: 1, isActive: 1 });
+categorySchema.index({ parent: 1, name: 1 }, { unique: true });
+categorySchema.index({ parent: 1, slug: 1 }, { unique: true });
+// Multikey index: MongoDB creates one index entry per element in the array,
+// so `Category.find({ ancestors: someId })` is an indexed lookup, not a collection scan.
+categorySchema.index({ ancestors: 1 });
 
 type CategoryProps = InferSchemaType<typeof categorySchema>;
 
-export type LeanCategory = Omit<CategoryProps, "parent"> & {
+export type LeanCategory = Omit<CategoryProps, "parent" | "ancestors"> & {
   _id: mongoose.Types.ObjectId;
-  parent: mongoose.Types.ObjectId | null;
+  parent?: mongoose.Types.ObjectId | null;
+  ancestors: mongoose.Types.ObjectId[];
   createdAt: Date;
   updatedAt: Date;
 };
 
 export type CategoryDocument = HydratedDocument<CategoryProps>;
 
-export const Category = mongoose.model<CategoryProps>("Category", categorySchema);
+export const Category = mongoose.model<CategoryProps>(
+  "Category",
+  categorySchema,
+);
