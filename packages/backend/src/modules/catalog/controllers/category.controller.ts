@@ -6,7 +6,6 @@ import { CategoryDocument, LeanCategory } from "../models/category.model.js";
 import { CategoryResponse } from "@e-com/shared/types";
 import { CategoryWithStatus } from "../services/category.service.js";
 
-
 const isCategoryWithStatus = (
   cat: LeanCategory | CategoryDocument | CategoryWithStatus,
 ): cat is CategoryWithStatus =>
@@ -26,12 +25,11 @@ const toCategoryResponse = (
     ? category.isEffectivelyActive
     : category.isActive,
   blockingAncestorId: isCategoryWithStatus(category)
-    ? category.blockingAncestorId?.toString() ?? null
+    ? (category.blockingAncestorId?.toString() ?? null)
     : null,
   createdAt: category.createdAt.toISOString(),
   updatedAt: category.updatedAt.toISOString(),
 });
-
 
 export const categoryControllerCreator = (
   categoryService: ICategoryServices,
@@ -51,8 +49,11 @@ export const categoryControllerCreator = (
       }
     },
 
-
-    getAllCategoryTree: async (req: Request, res: Response, next: NextFunction) => {
+    getAllCategoryTree: async (
+      req: Request,
+      res: Response,
+      next: NextFunction,
+    ) => {
       const ctx = createCtx(req, "get_category_tree");
 
       try {
@@ -65,6 +66,26 @@ export const categoryControllerCreator = (
       } catch (error) {
         next(error);
       }
-    }
+    },
+    getCategoryTable: async (
+      req: Request,
+      res: Response,
+      next: NextFunction,
+    ) => {
+      const ctx = createCtx(req, "get_category_table");
+      try {
+        const result = await categoryService.getCategory(req.query as any, ctx);
+
+        res.status(200).json({
+          success: true,
+          data: {
+            items: result.items.map(toCategoryResponse),
+            pagination: result.pagination,
+          },
+        });
+      } catch (error) {
+        next(error);
+      }
+    },
   };
 };

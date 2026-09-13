@@ -1,14 +1,19 @@
-import { CreateCategoryInput } from "@e-com/shared/schemas";
+import { CategoryListQuery, CreateCategoryInput } from "@e-com/shared/schemas";
+import mongoose from "mongoose";
 import { RequestContext } from "../../../shared/types/request-context.js";
-import { ICategoryServices } from "../interfaces/category.service.interface.js";
-import { generateSlug } from "../../../shared/utils/slug.utils.js";
-import { Category, LeanCategory } from "../models/category.model.js";
-import { CatalogError } from "../errors/catalog.errors.js";
 import {
   getDuplicateKeyField,
   isMongoDuplicateKeyError,
 } from "../../../shared/utils/mongo.utils.js";
-import mongoose from "mongoose";
+import {
+  buildPaginationMeta,
+  PaginatedResult,
+  parsePagination,
+} from "../../../shared/utils/pagination.utils.js";
+import { generateSlug } from "../../../shared/utils/slug.utils.js";
+import { CatalogError } from "../errors/catalog.errors.js";
+import { ICategoryServices } from "../interfaces/category.service.interface.js";
+import { Category, LeanCategory } from "../models/category.model.js";
 
 export type CategoryWithStatus = LeanCategory & {
   isEffectivelyActive: boolean;
@@ -116,33 +121,35 @@ export class CategoryService implements ICategoryServices {
         categoryMap.set(doc._id.toString(), doc);
       }
 
-      const categoriesWithStatus: CategoryWithStatus[] = entireCatTree.map((doc) => {
-        if (!doc.isActive) {
-          return {
-            ...doc,
-            isEffectivelyActive: false,
-            blockingAncestorId: null,
-          };
-        }
-
-        for (const ancestorId of doc.ancestors) {
-          const ancestorDoc = categoryMap.get(ancestorId.toString());
-
-          if (!ancestorDoc || !ancestorDoc.isActive) {
+      const categoriesWithStatus: CategoryWithStatus[] = entireCatTree.map(
+        (doc) => {
+          if (!doc.isActive) {
             return {
               ...doc,
               isEffectivelyActive: false,
-              blockingAncestorId: ancestorId,
+              blockingAncestorId: null,
             };
           }
-        }
 
-        return {
-          ...doc,
-          isEffectivelyActive: true,
-          blockingAncestorId: null,
-        };
-      });
+          for (const ancestorId of doc.ancestors) {
+            const ancestorDoc = categoryMap.get(ancestorId.toString());
+
+            if (!ancestorDoc || !ancestorDoc.isActive) {
+              return {
+                ...doc,
+                isEffectivelyActive: false,
+                blockingAncestorId: ancestorId,
+              };
+            }
+          }
+
+          return {
+            ...doc,
+            isEffectivelyActive: true,
+            blockingAncestorId: null,
+          };
+        },
+      );
 
       ctx?.logger.info(
         { totalCategories: categoriesWithStatus.length },
@@ -156,5 +163,119 @@ export class CategoryService implements ICategoryServices {
       throw error;
     }
   }
-}
 
+  async getCategory(
+    query: CategoryListQuery,
+    ctx?: RequestContext,
+  ): Promise<PaginatedResult<CategoryWithStatus>> {
+    ctx?.logger.info({ query }, "fetching categories for admin frontend");
+
+    try {
+      const { search, page, limit, status, depth, parent } = query;
+
+      const entireCatTree = await Category.find().lean();
+      ctx?.logger.info({ totalDBCount: entireCatTree.length }, "Fetched entire category tree from DB");
+
+      const categoryMap = new Map<string, LeanCategory>();
+
+      for (const doc of entireCatTree) {
+        categoryMap.set(doc._id.toString(), doc);
+      }
+
+      const categoriesWithStatus: CategoryWithStatus[] = entireCatTree.map(
+        (doc) => {
+          if (!doc.isActive) {
+            return {
+              ...doc,
+              isEffectivelyActive: false,
+              blockingAncestorId: null,
+            };
+          }
+
+          for (const ancestorId of doc.ancestors) {
+            const ancestorDoc = categoryMap.get(ancestorId.toString());
+
+            if (!ancestorDoc || !ancestorDoc.isActive) {
+              return {
+                ...doc,
+                isEffectivelyActive: false,
+                blockingAncestorId: ancestorId,
+              };
+            }
+          }
+
+          return {
+            ...doc,
+            isEffectivelyActive: true,
+            blockingAncestorId: null,
+          };
+        },
+      );
+
+      let filteredData = categoriesWithStatus;
+
+      // 1. Status Filter
+      if (status === "active") {
+        filteredData = filteredData.filter((cat) => cat.isEffectivelyActive);
+      } else if (status === "inActive" || (status as string) === "inactive") {
+        filteredData = filteredData.filter((cat) => !cat.isActive);
+      } else if (status === "blocked") {
+        filteredData = filteredData.filter(
+          (cat) => cat.isActive && !cat.isEffectivelyActive,
+        );
+      }
+      ctx?.logger.info({ count: filteredData.length, status }, "Applied status filter");
+
+      // 2. Search Filter (name or slug)
+      if (search) {
+        const searchRegex = new RegExp(search, "i");
+        filteredData = filteredData.filter(
+          (cat) => searchRegex.test(cat.name) || searchRegex.test(cat.slug),
+        );
+        ctx?.logger.info({ count: filteredData.length, search }, "Applied search filter");
+      }
+
+      // 3. Depth Filter
+      if (depth === "root") {
+        filteredData = filteredData.filter((cat) => cat.ancestors.length === 0);
+      } else if (depth === "level1") {
+        filteredData = filteredData.filter((cat) => cat.ancestors.length === 1);
+      } else if (depth === "level2") {
+        filteredData = filteredData.filter((cat) => cat.ancestors.length === 2);
+      }
+      ctx?.logger.info({ count: filteredData.length, depth }, "Applied depth filter");
+
+      // 4. Parent Filter (if provided)
+      if (parent) {
+        filteredData = filteredData.filter(
+          (cat) => cat.parent?.toString() === parent,
+        );
+        ctx?.logger.info({ count: filteredData.length, parent }, "Applied parent filter");
+      }
+
+      // 5. Pagination
+      const {
+        page: safePage,
+        limit: safeLimit,
+        skip,
+      } = parsePagination(page, limit);
+      const totalCount = filteredData.length;
+      const paginatedItems = filteredData.slice(skip, skip + safeLimit);
+      const pagination = buildPaginationMeta(totalCount, safePage, safeLimit);
+
+      ctx?.logger.info(
+        { totalCount, returnedCount: paginatedItems.length, page: safePage, limit: safeLimit },
+        "Categories retrieved successfully",
+      );
+
+      return {
+        items: paginatedItems,
+        pagination,
+      };
+    } catch (error: unknown) {
+      ctx?.logger.error({ err: error, query }, "Failed to retrieve categories");
+      if (error instanceof CatalogError) throw error;
+      throw error;
+    }
+  }
+}

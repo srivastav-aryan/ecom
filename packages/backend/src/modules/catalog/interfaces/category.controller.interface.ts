@@ -7,5 +7,15 @@ export interface ICategoryControllerInterface {
     next: NextFunction,
   ): Promise<void>;
 
-  getAllCategoryTree(req: Request, res: Response, next: NextFunction): Promise<void>;
+  getAllCategoryTree(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void>;
+
+  getCategoryTable(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void>;
 }
