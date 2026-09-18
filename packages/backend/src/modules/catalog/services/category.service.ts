@@ -174,8 +174,11 @@ export class CategoryService implements ICategoryServices {
       const { search, page, limit, status, depth, parent } = query;
 
       const entireCatTree = await Category.find().lean();
-      ctx?.logger.info({ totalDBCount: entireCatTree.length }, "Fetched entire category tree from DB");
-
+      ctx?.logger.info(
+        { totalDBCount: entireCatTree.length },
+        "Fetched entire category tree from DB",
+      );
+      console.log("FINAL REQ QUERY:", query);
       const categoryMap = new Map<string, LeanCategory>();
 
       for (const doc of entireCatTree) {
@@ -224,7 +227,10 @@ export class CategoryService implements ICategoryServices {
           (cat) => cat.isActive && !cat.isEffectivelyActive,
         );
       }
-      ctx?.logger.info({ count: filteredData.length, status }, "Applied status filter");
+      ctx?.logger.info(
+        { count: filteredData.length, status },
+        "Applied status filter",
+      );
 
       // 2. Search Filter (name or slug)
       if (search) {
@@ -232,7 +238,10 @@ export class CategoryService implements ICategoryServices {
         filteredData = filteredData.filter(
           (cat) => searchRegex.test(cat.name) || searchRegex.test(cat.slug),
         );
-        ctx?.logger.info({ count: filteredData.length, search }, "Applied search filter");
+        ctx?.logger.info(
+          { count: filteredData.length, search },
+          "Applied search filter",
+        );
       }
 
       // 3. Depth Filter
@@ -243,14 +252,20 @@ export class CategoryService implements ICategoryServices {
       } else if (depth === "level2") {
         filteredData = filteredData.filter((cat) => cat.ancestors.length === 2);
       }
-      ctx?.logger.info({ count: filteredData.length, depth }, "Applied depth filter");
+      ctx?.logger.info(
+        { count: filteredData.length, depth },
+        "Applied depth filter",
+      );
 
       // 4. Parent Filter (if provided)
       if (parent) {
         filteredData = filteredData.filter(
           (cat) => cat.parent?.toString() === parent,
         );
-        ctx?.logger.info({ count: filteredData.length, parent }, "Applied parent filter");
+        ctx?.logger.info(
+          { count: filteredData.length, parent },
+          "Applied parent filter",
+        );
       }
 
       // 5. Pagination
@@ -264,7 +279,12 @@ export class CategoryService implements ICategoryServices {
       const pagination = buildPaginationMeta(totalCount, safePage, safeLimit);
 
       ctx?.logger.info(
-        { totalCount, returnedCount: paginatedItems.length, page: safePage, limit: safeLimit },
+        {
+          totalCount,
+          returnedCount: paginatedItems.length,
+          page: safePage,
+          limit: safeLimit,
+        },
         "Categories retrieved successfully",
       );
 
