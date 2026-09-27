@@ -11,3 +11,9 @@ export type CategoryResponse = {
   createdAt: string,
   updatedAt: string,
 } 
+
+export type CategoryTreeNode = CategoryResponse & {
+  children: CategoryTreeNode[];
+};
+
+export type CategoryTreeResponse = CategoryTreeNode;

@@ -20,9 +20,8 @@ export { categoryControllerCreator } from "./controllers/category.controller.js"
 
 // Routes
 export { createBrandRouter } from "./routes/brand.routes.js";
-export { createCategoryRouter } from "./routes/category.routes.js";
-
-
+export { createCategoryRouter } from "./routes/category.routes.js";// Mappers
+export { CategoryMapper } from "./mappers/category.mapper.js";
 
 // Errors
 export { CatalogError, type CatalogErrorCode, CATALOG_ERROR_CODES } from "./errors/catalog.errors.js";

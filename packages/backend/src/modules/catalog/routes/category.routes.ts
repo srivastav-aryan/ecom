@@ -15,7 +15,7 @@ export const createCategoryRouter = (
 ) => {
   const categoryRouter = express.Router();
 
-  // POST create category
+  // POST /api/catalog/categories - Create category
   categoryRouter.post(
     "/",
     authenticate,
@@ -24,16 +24,25 @@ export const createCategoryRouter = (
     categoryController.createCategory,
   );
 
-  // GET Category tree for navbar
-  categoryRouter.get("/getCategoryTree", categoryController.getAllCategoryTree);
+  // GET /api/catalog/categories/storefront - Storefront / Navigation tree
+  categoryRouter.get("/storefront", categoryController.getAllCategoryTree);
 
-  //GET Category for admin side
+  // GET /api/catalog/categories - Admin Tabular List View (paginated, filtered)
   categoryRouter.get(
-    "/category",
+    "/",
     authenticate,
     authorize(PERMISSIONS.CATEGORIES_READ),
     validateReq(categoryListQuerySchema),
-    categoryController.getCategoryTable
+    categoryController.getCategoryTable,
+  );
+
+  // GET /api/catalog/categories/tree - Admin Hierarchical Tree View
+  categoryRouter.get(
+    "/tree",
+    authenticate,
+    authorize(PERMISSIONS.CATEGORIES_READ),
+    validateReq(categoryListQuerySchema),
+    categoryController.getCategoryTree,
   );
 
   return categoryRouter;

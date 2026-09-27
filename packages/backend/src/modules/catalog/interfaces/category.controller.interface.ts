@@ -18,4 +18,10 @@ export interface ICategoryControllerInterface {
     res: Response,
     next: NextFunction,
   ): Promise<void>;
+
+  getCategoryTree(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void>;
 }

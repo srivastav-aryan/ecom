@@ -14,6 +14,8 @@ import { generateSlug } from "../../../shared/utils/slug.utils.js";
 import { CatalogError } from "../errors/catalog.errors.js";
 import { ICategoryServices } from "../interfaces/category.service.interface.js";
 import { Category, LeanCategory } from "../models/category.model.js";
+import { CategoryTreeResponse } from "@e-com/shared/types";
+import Fuse from "fuse.js";
 
 export type CategoryWithStatus = LeanCategory & {
   isEffectivelyActive: boolean;
@@ -178,7 +180,6 @@ export class CategoryService implements ICategoryServices {
         { totalDBCount: entireCatTree.length },
         "Fetched entire category tree from DB",
       );
-      console.log("FINAL REQ QUERY:", query);
       const categoryMap = new Map<string, LeanCategory>();
 
       for (const doc of entireCatTree) {
@@ -294,6 +295,144 @@ export class CategoryService implements ICategoryServices {
       };
     } catch (error: unknown) {
       ctx?.logger.error({ err: error, query }, "Failed to retrieve categories");
+      if (error instanceof CatalogError) throw error;
+      throw error;
+    }
+  }
+
+  async getTree(
+    query: CategoryListQuery,
+    ctx?: RequestContext,
+  ): Promise<CategoryTreeResponse[]> {
+    ctx?.logger.info({ query }, "Fetching category tree for admin frontend");
+
+    try {
+      const { status, search, parent } = query;
+
+      const allCategories = await Category.find().lean();
+      ctx?.logger.info(
+        { totalDBCount: allCategories.length },
+        "Fetched categories from DB",
+      );
+
+      const categoryMap = new Map<string, LeanCategory>();
+
+      for (const category of allCategories) {
+        categoryMap.set(category._id.toString(), category);
+      }
+
+      const categoriesWithStatus: CategoryWithStatus[] = allCategories.map(
+        (doc) => {
+          if (!doc.isActive) {
+            return {
+              ...doc,
+              isEffectivelyActive: false,
+              blockingAncestorId: null,
+            };
+          }
+
+          for (const ancestorId of doc.ancestors) {
+            const ancestorDoc = categoryMap.get(ancestorId.toString());
+
+            if (!ancestorDoc || !ancestorDoc.isActive) {
+              return {
+                ...doc,
+                isEffectivelyActive: false,
+                blockingAncestorId: ancestorId,
+              };
+            }
+          }
+
+          return {
+            ...doc,
+            isEffectivelyActive: true,
+            blockingAncestorId: null,
+          };
+        },
+      );
+
+      let filteredCategories = categoriesWithStatus;
+
+      if (status == "active") {
+        filteredCategories = filteredCategories.filter(
+          (doc) => doc.isActive && doc.isEffectivelyActive,
+        );
+        ctx?.logger.info(
+          { count: filteredCategories.length, status },
+          "Applied status filter",
+        );
+      }
+
+      if (search) {
+        const fuse = new Fuse(categoriesWithStatus, {
+          keys: ["name", "slug"],
+          threshold: 0.3,
+        });
+
+        const searchHits = fuse.search(search).map((result) => result.item);
+
+        const matchedCategoryIds = new Set(
+          searchHits.map((cat) => cat._id.toString()),
+        );
+
+        filteredCategories = filteredCategories.filter(
+          (cat) =>
+            matchedCategoryIds.has(cat._id.toString()) ||
+            cat.ancestors.some((id) => matchedCategoryIds.has(id.toString())),
+        );
+
+        ctx?.logger.info(
+          {
+            count: filteredCategories.length,
+            search,
+            directMatches: searchHits.length,
+          },
+          "Applied search filter",
+        );
+      }
+
+      if (parent) {
+        filteredCategories = filteredCategories.filter(
+          (cat) =>
+            cat._id.toString() === parent ||
+            cat.ancestors.some((ancestorId) => ancestorId.toString() === parent),
+        );
+        ctx?.logger.info(
+          { count: filteredCategories.length, parent },
+          "Applied parent filter",
+        );
+      }
+
+      const categoryTree: any[] = [];
+      const treeMap = new Map<string, any>();
+
+      for (const cat of filteredCategories) {
+        treeMap.set(cat._id.toString(), { ...cat, children: [] });
+      }
+
+      for (const cat of filteredCategories) {
+        const node = treeMap.get(cat._id.toString());
+        if (cat.parent && treeMap.has(cat.parent.toString())) {
+          treeMap.get(cat.parent.toString()).children.push(node);
+        } else {
+          categoryTree.push(node);
+        }
+      }
+      // Since JS objects are held by reference, updating child in treeMap updates it in categoryTree as well
+
+      ctx?.logger.info(
+        {
+          rootNodesCount: categoryTree.length,
+          totalNodesCount: filteredCategories.length,
+        },
+        "Category tree assembled successfully",
+      );
+
+      const responseTree: CategoryTreeResponse[] = categoryTree;
+
+      return responseTree;
+    } catch (error: unknown) {
+      ctx?.logger.error({ err: error, query }, "Failed to retrieve category tree");
       if (error instanceof CatalogError) throw error;
       throw error;
     }
