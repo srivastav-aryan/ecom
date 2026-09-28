@@ -3,7 +3,10 @@ import { RequestContext } from "../../../shared/types/request-context.js";
 import { PaginatedResult } from "../../../shared/utils/pagination.utils.js";
 import { LeanCategory } from "../models/category.model.js";
 import { CategoryWithStatus } from "../services/category.service.js";
-import { CategoryTreeResponse } from "@e-com/shared/types";
+import {
+  CategoryDetailResponse,
+  CategoryTreeResponse,
+} from "@e-com/shared/types";
 
 export interface ICategoryServices {
   createCategory(
@@ -22,4 +25,6 @@ export interface ICategoryServices {
     query: CategoryListQuery,
     ctx?: RequestContext,
   ): Promise<CategoryTreeResponse[]>;
+
+  getTreeNode(id: string, ctx?: RequestContext): Promise<CategoryDetailResponse>;
 }

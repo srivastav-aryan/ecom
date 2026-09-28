@@ -24,4 +24,10 @@ export interface ICategoryControllerInterface {
     res: Response,
     next: NextFunction,
   ): Promise<void>;
+
+    getCategoryDetail(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void>;
 }

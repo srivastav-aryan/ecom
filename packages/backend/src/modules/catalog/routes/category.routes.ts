@@ -3,6 +3,7 @@ import { authorize } from "../../../shared/middlewares/authorization.middleware.
 import { ICategoryControllerInterface } from "../interfaces/category.controller.interface.js";
 
 import {
+    categoryListNodeQuerySchema,
   categoryListQuerySchema,
   createCategorySchema,
 } from "@e-com/shared/schemas";
@@ -43,6 +44,15 @@ export const createCategoryRouter = (
     authorize(PERMISSIONS.CATEGORIES_READ),
     validateReq(categoryListQuerySchema),
     categoryController.getCategoryTree,
+  );
+
+  // GET /api/catalog/categories/treenode/:id - Admin single tree node detailed View
+  categoryRouter.get(
+    "/treenode/:id",
+    authenticate,
+    authorize(PERMISSIONS.CATEGORIES_READ),
+    validateReq(categoryListNodeQuerySchema),
+    categoryController.getCategoryDetail,
   );
 
   return categoryRouter;

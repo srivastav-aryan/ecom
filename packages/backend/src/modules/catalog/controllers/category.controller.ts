@@ -80,6 +80,23 @@ export const categoryControllerCreator = (
         next(error);
       }
     },
+
+    getCategoryDetail: async (
+      req: Request,
+      res: Response,
+      next: NextFunction,
+    ) => {
+      const ctx = createCtx(req, "get_category_admin_tree");
+
+      try {
+        const result = await categoryService.getTreeNode(req.params.id, ctx);
+        res.status(200).json({
+          success: true,
+          data: result,
+        });
+      } catch (error) {
+        next(error);
+      }
+    },
   };
 };
-

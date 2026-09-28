@@ -14,7 +14,10 @@ import { generateSlug } from "../../../shared/utils/slug.utils.js";
 import { CatalogError } from "../errors/catalog.errors.js";
 import { ICategoryServices } from "../interfaces/category.service.interface.js";
 import { Category, LeanCategory } from "../models/category.model.js";
-import { CategoryTreeResponse } from "@e-com/shared/types";
+import {
+  CategoryDetailResponse,
+  CategoryTreeResponse,
+} from "@e-com/shared/types";
 import Fuse from "fuse.js";
 
 export type CategoryWithStatus = LeanCategory & {
@@ -395,7 +398,9 @@ export class CategoryService implements ICategoryServices {
         filteredCategories = filteredCategories.filter(
           (cat) =>
             cat._id.toString() === parent ||
-            cat.ancestors.some((ancestorId) => ancestorId.toString() === parent),
+            cat.ancestors.some(
+              (ancestorId) => ancestorId.toString() === parent,
+            ),
         );
         ctx?.logger.info(
           { count: filteredCategories.length, parent },
@@ -432,7 +437,73 @@ export class CategoryService implements ICategoryServices {
 
       return responseTree;
     } catch (error: unknown) {
-      ctx?.logger.error({ err: error, query }, "Failed to retrieve category tree");
+      ctx?.logger.error(
+        { err: error, query },
+        "Failed to retrieve category tree",
+      );
+      if (error instanceof CatalogError) throw error;
+      throw error;
+    }
+  }
+
+  async getTreeNode(
+    id: string,
+    ctx?: RequestContext,
+  ): Promise<CategoryDetailResponse> {
+    ctx?.logger.info("Fetching category tree node ");
+
+    try {
+      const categoryNode = await Category.findById(id)
+        .populate<{
+          parent: {
+            _id: string;
+            name: string;
+            slug: string;
+            isActive: boolean;
+          } | null;
+        }>("parent", "name slug isActive")
+        .populate<{
+          ancestors: {
+            _id: string;
+            name: string;
+            slug: string;
+            isActive: boolean;
+          }[];
+        }>("ancestors", "name slug isActive")
+        .lean();
+
+      if (!categoryNode) {
+        throw new CatalogError(
+          "CATEGORY_NOT_FOUND",
+          "NO such category is in the catalog",
+          404,
+        );
+      }
+
+      const childrenCount = await Category.countDocuments({ parent: id });
+
+      const blockingAncestor = categoryNode.ancestors.find(
+        (ancestor) => ancestor.isActive === false,
+      );
+
+      let nodeWithStatus = categoryNode as any;
+
+      if (!categoryNode.isActive) {
+        nodeWithStatus.isEffectivelyActive = false;
+        nodeWithStatus.blockingAncestorId = null;
+      } else if (blockingAncestor) {
+        nodeWithStatus.isEffectivelyActive = false;
+        nodeWithStatus.blockingAncestorId = blockingAncestor._id.toString();
+      } else {
+        nodeWithStatus.isEffectivelyActive = true;
+        nodeWithStatus.blockingAncestorId = null;
+      }
+
+      nodeWithStatus.childrenCount = childrenCount;
+
+      return nodeWithStatus as CategoryDetailResponse;
+    } catch (error: unknown) {
+      ctx?.logger.error({ err: error }, "Failed to retrieve category node");
       if (error instanceof CatalogError) throw error;
       throw error;
     }

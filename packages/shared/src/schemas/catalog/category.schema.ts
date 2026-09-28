@@ -89,6 +89,10 @@ export const categoryListQuerySchema = z.object({
   }),
 });
 
+export const categoryListNodeQuerySchema = z.object({
+  params: z.object({ id: objectIdAtom }),
+});
+
 // ---------------------------------------------------------------------------
 // Inferred TypeScript types
 // ---------------------------------------------------------------------------
@@ -97,3 +101,6 @@ export type UpdateCategoryInput = z.infer<typeof updateCategorySchema>["body"];
 export type CategoryListQuery = z.infer<
   typeof categoryListQuerySchema
 >["query"];
+export type categoryListNodeQuerySchema = z.infer<
+  typeof categoryListNodeQuerySchema
+>["params"];

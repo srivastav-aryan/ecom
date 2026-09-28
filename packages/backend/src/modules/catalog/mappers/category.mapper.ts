@@ -1,4 +1,4 @@
-import { CategoryResponse, CategoryTreeResponse } from "@e-com/shared/types";
+import { CategoryResponse, CategoryTreeNode } from "@e-com/shared/types";
 import { CategoryDocument, LeanCategory } from "../models/category.model.js";
 import { CategoryWithStatus } from "../services/category.service.js";
 
@@ -39,9 +39,9 @@ export class CategoryMapper {
 
   /**
    * Recursively maps an in-memory tree node (including all nested children)
-   * to the public CategoryTreeResponse DTO.
+   * to the public CategoryTreeNode DTO.
    */
-  static toTreeNode(node: any): CategoryTreeResponse {
+  static toTreeNode(node: any): CategoryTreeNode {
     return {
       ...CategoryMapper.toResponse(node),
       children: (node.children ?? []).map(CategoryMapper.toTreeNode),
@@ -49,9 +49,9 @@ export class CategoryMapper {
   }
 
   /**
-   * Maps an array of in-memory tree root nodes to an array of CategoryTreeResponse DTOs.
+   * Maps an array of in-memory tree root nodes to an array of CategoryTreeNode DTOs.
    */
-  static toTreeResponse(nodes: any[]): CategoryTreeResponse[] {
+  static toTreeResponse(nodes: any[]): CategoryTreeNode[] {
     return nodes.map(CategoryMapper.toTreeNode);
   }
 }

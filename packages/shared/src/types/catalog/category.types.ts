@@ -1,19 +1,23 @@
 export type CategoryResponse = {
-  id: string,
-  name: string,
-  slug: string,
-  description: string,
-  parent: string | null,
-  ancestors: string[],
-  isActive: boolean,
-  isEffectivelyActive: boolean,
-  blockingAncestorId: string | null,
-  createdAt: string,
-  updatedAt: string,
-} 
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+  parent: string | null;
+  ancestors: string[];
+  isActive: boolean;
+  isEffectivelyActive: boolean;
+  blockingAncestorId: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
 
 export type CategoryTreeNode = CategoryResponse & {
   children: CategoryTreeNode[];
 };
 
 export type CategoryTreeResponse = CategoryTreeNode;
+
+export type CategoryDetailResponse = CategoryResponse & {
+  childrenCount: number;
+};
